@@ -1,0 +1,54 @@
+model:
+  conv_layer_count: 5
+  conv_layer_kernel: 3
+  conv_layer_filters: 32
+  layout: NDHWC
+  script: false
+  cuda_graph: false
+  training:
+    target_score: 0.124
+    dropout_rate: 0.5
+    weight_decay: 0
+    optimizer: fixed_sgd
+    momentum: 0.9
+    amp: true
+    lr_sched:
+      lr: 0.004
+      init_lr: 0.001
+      warmup_epochs: 4
+      decay_steps:
+      - 32
+      - 64
+      decay_values:
+      - 0.25
+      - 0.125
+    train_epochs: 10
+data:
+  batch_size: 1
+  train_samples: 256
+  valid_samples: 64
+  dataset: synthetic
+  apply_log: true
+  shuffle: true
+  preshuffle: false
+  shard_type: local
+  shard_multiplier: 1
+  root_dir: ./data
+  stage: /local/scratch/
+  stage_mode: thread
+  stage_workers: 32
+  sample_shape:
+  - 128
+  - 128
+  - 128
+  - 4
+  target_shape:
+  - 4
+  dali_threads: 4
+  data_layout: NDHWC
+profile: false
+mpi:
+  local_size: 4
+log:
+  timestamp: 2
+  experiment_id: 553884.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov

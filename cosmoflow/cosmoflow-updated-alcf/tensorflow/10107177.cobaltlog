@@ -1,0 +1,26 @@
+Jobid: 10107177
+qsub -q bigmem -I -A datascience -t 60 -n 1 --attrs pubnet=true:filesystems=home,grand:enable_ssh=1:fakeroot=true
+Wed Sep 14 14:21:06 2022 -0500 (CDT) submitted with cwd set to: /lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow
+jobid 10107177 submitted from terminal /dev/pts/30
+Wed Sep 14 19:21:14 2022 +0000 (UTC) 
+Wed Sep 14 19:21:14 2022 +0000 (UTC) Command: '/usr/bin/ssh' 'thetagpu24' '/usr/bin/cobalt-launcher.py' '--nf' '/var/tmp/cobalt.10107177' '--jobid' '10107177' '--cwd' '/lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow' '--env' 'COBALT_JOBID=10107177' '/bin/sleep' '3600'
+Wed Sep 14 19:21:14 2022 +0000 (UTC) 
+Wed Sep 14 19:21:14 2022 +0000 (UTC) Environment:
+Wed Sep 14 19:21:14 2022 +0000 (UTC) SHELL=/bin/bash
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_NODEFILE=/tmp/tmp6Hgg3k
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_PARTNAME=thetagpu24
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_JOBID=10107177
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_STARTTIME=1663183267
+Wed Sep 14 19:21:14 2022 +0000 (UTC) LOGNAME=hzheng
+Wed Sep 14 19:21:14 2022 +0000 (UTC) USER=hzheng
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_ENDTIME=1663186867
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_PARTSIZE=1
+Wed Sep 14 19:21:14 2022 +0000 (UTC) HOME=/home/hzheng
+Wed Sep 14 19:21:14 2022 +0000 (UTC) COBALT_JOBSIZE=1
+Wed Sep 14 19:21:14 2022 +0000 (UTC) 
+Wed Sep 14 19:21:14 2022 +0000 (UTC) Info: stdin received from /dev/null
+Wed Sep 14 19:21:14 2022 +0000 (UTC) Info: stdout sent to /lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow/10107177.output
+Wed Sep 14 19:21:14 2022 +0000 (UTC) Info: stderr sent to /lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow/10107177.error
+Wed Sep 14 19:21:14 2022 +0000 (UTC) 
+Wed Sep 14 20:21:18 2022 +0000 (UTC) Info: maximum execution time exceeded; initiating job termination
+Wed Sep 14 20:21:35 2022 +0000 (UTC) Info: job is in the process of exiting; user delete request ignored

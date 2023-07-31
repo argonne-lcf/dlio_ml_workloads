@@ -1,0 +1,32 @@
+{
+  "DGXA100_64x8x4": {
+    "date": "2022-06-07",
+    "metrics": {
+      "d_score": {
+        "goal": "MINIMIZE",
+        "allowed_max": 27.0,
+        "targets": {}
+      },
+      "throughput": {
+        "goal": "MAXIMIZE",
+        "allowed_min": 26000.0,
+        "targets": {}
+      }
+    }
+  },
+  "DGXA100_8x8x16": {
+    "date": "2022-06-07",
+    "metrics": {
+      "d_score": {
+        "goal": "MINIMIZE",
+        "allowed_max": 90.0,
+        "targets": {}
+      },
+      "throughput": {
+        "goal": "MAXIMIZE",
+        "allowed_min": 680.0,
+        "targets": {}
+      }
+    }
+  }
+}

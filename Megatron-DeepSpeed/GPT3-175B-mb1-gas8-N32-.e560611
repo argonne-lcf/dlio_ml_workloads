@@ -1,0 +1,11 @@
+
+Lmod is automatically replacing "nvhpc/21.9" with "gcc/11.2.0".
+
+
+Lmod is automatically replacing "PrgEnv-nvhpc/8.3.3" with "PrgEnv-gnu/8.3.3".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.16
+
+/usr/share/lmod/lmod/init/bash: line 71: export: __add_sys_prefix_to_path: not a function

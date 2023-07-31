@@ -1,0 +1,69 @@
+
+containers:
+  cosmoflow: dl+mlperf+optimized-hpc+cosmoflow.pytorch.xxx.sqsh
+  deepcam: dl+mlperf+optimized-hpc+deepcam.pytorch.xxx.sqsh
+  oc20: dl+mlperf+optimized-hpc+oc20.pytorch.xxx.sqsh
+
+################################################################################
+# For each benchmark the product of the --nexp and --npar
+# fields should be twice the "number of runs" listed in the table here:
+# https://github.com/mlcommons/training_policies/blob/master/hpc_training_rules.adoc#benchmark-results
+#
+# Pay special attention to the expected WALLTIME_MINUTES in each config when
+# you choose how to split up the runs between --nexp and --npar.  The number of
+# experiments per run times the WALLTIME_MINUTES in the config must be less
+# than 240 minutes for all jobs, and less than 120 minutes for large configs
+# (those > 256 nodes).  In general it is easier to get your jobs scheduled by
+# slurm if you keep the total walltime less than 120 minutes, even for jobs
+# with a small number of nodes.
+################################################################################
+
+benchmark_configs:
+  cosmoflow:
+    med:
+      path: configs/config_DGXA100_16x8x1.sh
+      launch_parameters: --nexp 2 --npar 10
+      path_extension: strong
+    large:
+      path: configs/config_DGXA100_128x8x1_other.sh
+      launch_parameters: --nexp 5 --npar 4
+      path_extension: strong
+    jumbo:
+      path: configs/config_DGXA100_16x16x8x1.sh
+      launch_parameters: --partition large_runs
+      path_extension: weak
+
+  deepcam:
+    med:
+      path: configs/config_DGXA100_64x8x2.sh
+      launch_parameters: --nexp 10 --npar 1
+      path_extension: strong
+    large:
+      path: configs/config_DGXA100_256x8x1.sh
+      launch_parameters: --nexp 10 --npar 1
+      path_extension: strong
+    jumbo:
+      path: configs/config_DGXA100_240x2x8x8_weak.sh
+      launch_parameters: --partition large_runs
+      path_extension: weak
+
+  oc20:
+    med:
+      path: configs/config_DGXA100_8x8x16.sh
+      launch_parameters: --nexp 2 --npar 5
+      path_extension: strong
+    large:
+      path: configs/config_DGXA100_64x8x4.sh
+      launch_parameters: --nexp 2 --npar 5
+      path_extension: strong
+    jumbo:
+      path: configs/config_DGXA100_30x16x8x8.sh
+      launch_parameters: --partition large_runs
+      path_extension: weak
+
+
+frameworks:
+  cosmoflow: pytorch
+  deepcam: pytorch
+  oc20: pytorch
+

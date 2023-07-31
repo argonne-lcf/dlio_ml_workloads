@@ -1,2 +1,1 @@
-# dlio_ml_workloads
-Set of workloads used for dlio_ml_workloads
+Read and references will be updated soon.

@@ -1,0 +1,98 @@
+
+Lmod is automatically replacing "nvhpc/21.9" with "gcc/11.2.0".
+
+
+Lmod is automatically replacing "PrgEnv-nvhpc/8.3.3" with "PrgEnv-gnu/8.3.3".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.16
+
+MPICH ERROR [Rank 128] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3207c0s37b0n0] - Abort(940664334) (rank 128 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x1463fc1a6a60, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x1463fc1a6a60, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+MPICH ERROR [Rank 216] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3005c0s19b0n0] - Abort(135357966) (rank 216 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14b7581a6a60, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 52 and tag 0 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14b7581a6a60, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 52 and tag 0 truncated; 25 bytes received but buffer size is 129
+MPICH ERROR [Rank 218] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3005c0s19b0n0] - Abort(940664334) (rank 218 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14b7f41a6560, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000000) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14b7f41a6560, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000000) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+MPICH ERROR [Rank 208] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3005c0s13b0n0] - Abort(1140238) (rank 208 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14fc8c1a6a60, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 209 and tag 3 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14fc8c1a6a60, scount=129, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 209 and tag 3 truncated; 25 bytes received but buffer size is 129
+MPICH ERROR [Rank 210] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3005c0s13b0n0] - Abort(470902286) (rank 210 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14b998234690, scount=25, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000000) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14b998234690, scount=25, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000000) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+MPICH ERROR [Rank 236] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3005c0s25b1n0] - Abort(336684558) (rank 236 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14949dbde530, scount=25, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 237 and tag 0 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x14949dbde530, scount=25, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000005) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 237 and tag 0 truncated; 25 bytes received but buffer size is 129
+MPICH ERROR [Rank 238] [job id 645e3d8f-682c-4a12-a119-cf4bd2c5cadd] [Tue Sep 13 10:55:50 2022] [x3005c0s25b1n0] - Abort(403793422) (rank 238 in comm 0): Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x1521c42f9af0, scount=25, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000000) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+
+aborting job:
+Fatal error in PMPI_Gatherv: Message truncated, error stack:
+PMPI_Gatherv(415).....: MPI_Gatherv failed(sbuf=0x1521c42f9af0, scount=25, MPI_BYTE, rbuf=(nil), rcnts=(nil), displs=(nil), datatype=MPI_BYTE, root=0, comm=comm=0xc4000000) failed
+MPIR_CRAY_Gatherv(365): 
+progress_recv(174)....: Message from rank 0 and tag 2 truncated; 25 bytes received but buffer size is 129
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+terminate called after throwing an instance of 'std::system_error'
+  what():  Resource deadlock avoided
+wandb: Currently logged in as: hzheng. Use `wandb login --relogin` to force relogin
+x3005c0s13b0n0.hsn.cm.polaris.alcf.anl.gov: rank 210 died from signal 6 and dumped core
+/soft/datascience/conda/2022-07-19/mconda3/lib/python3.8/multiprocessing/resource_tracker.py:216: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
