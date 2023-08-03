@@ -1,8 +1,4 @@
-**/apex
-**/new_env_k
-**/wandb
-**/mlperf-logging
-**/libboost
+**/dependencies
 **/dataset
-**/venvs/*
-
+ 
+ 
