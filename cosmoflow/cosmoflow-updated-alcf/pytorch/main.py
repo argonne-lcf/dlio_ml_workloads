@@ -19,7 +19,7 @@ import utils
 # For DLIO profiler
 from dlio_profiler.logger import dlio_logger as logger, fn_interceptor as dlp
 dlp_pid=os.getpid()
-dlp_log_file=f"/lus/grand/projects/datascience/kaushikv/dlio/ml_workloads/cosmoflow/cosmoflow-pytorch-huihuos/cosmoflow/pytorch/dlp-logs/trace-{dlp_pid}.pfw"
+dlp_log_file=f"/lus/eagle/projects/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/logs/dlp-logs/trace-{dlp_pid}.pfw"
 dlp_data_dir="/local/scratch/"
 logger.initialize_log(dlp_log_file, dlp_data_dir, dlp_pid)
 
