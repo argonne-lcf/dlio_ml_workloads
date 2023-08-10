@@ -19,9 +19,19 @@ import utils
 # For DLIO profiler
 from dlio_profiler.logger import dlio_logger as logger, fn_interceptor as dlp
 dlp_pid=os.getpid()
-dlp_log_file=f"/lus/eagle/projects/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/logs/dlp-logs/trace-{dlp_pid}.pfw"
+dlp_log_file=f"/lus/grand/projects/datascience/kaushikv/dlio/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dlp-logs/trace-{dlp_pid}.pfw"
 dlp_data_dir="/local/scratch/"
-logger.initialize_log(dlp_log_file, dlp_data_dir, dlp_pid)
+#dlp_data_dir="/grand/datascience/MlPerf-datasets/cosmoflow/tf_v2_gzip_256"
+dlp_log_inst=logger.initialize_log(dlp_log_file, dlp_data_dir, dlp_pid)
+
+# def capture_signal(signal_number, frame):
+#     log_inst.finalize()
+#     print("Kaushik-Calling-Finalize")
+#     print('Received Signal {}'.format(signal_number))
+#     exit(1)
+ 
+# signal.signal(signal.SIGSTOP, capture_signal)
+# os.kill(os.getpid(), signal.SIGSTOP)
 
 
 from data.dali_npy import NPyLegacyDataPipeline
@@ -192,7 +202,7 @@ class CosmoflowMain(PytorchApplication):
             version_base=None)
 def main(cfg: OmegaConf) -> Any:
     result=CosmoflowMain(cfg).exec()
-    logger.finalize()
+    dlp_log_inst.finalize()
     return result
 
 

@@ -1,17 +1,18 @@
 #!/bin/bash
 #PBS -S /bin/bash
-#PBS -l walltime=6:00:00
-#PBS -l nodes=128:ppn=4
-#PBS -M kaushik.v@anl.gov
+#PBS -l walltime=06:00:00
+#PBS -l nodes=10:ppn=4
 #PBS -A datascience
-#PBS -l filesystems=home:grand
+#PBS -l filesystems=grand
+#PBS -q preemptable
+#qsub -A datascience -q preemptable run-job.sc
 
 
-# Download Dataset directory :  /lus/grand/projects/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2/train
-# original code repo : /grand/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/
-# root_dir for config : "/grand/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2"
-# root_dir: "/home/hzheng/datascience_grand/mlperf_hpc/hpc-nvidia/datasets/cosmoflow/tf_v2_256"
+# Download Dataset directory : /lus/grand/projects/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2/
+#                            : /grand/datascience/hzheng/mlperf_hpc/hpc/cosmoflow/data/c64s16m/cosmoUniverse_2019_05_4parE_tf_v2/
+#                            : /grand/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2
 
+# original code repo         : /grand/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/
 
 # cd $PBS_O_WORKDIR
 # nodes=0
@@ -20,72 +21,32 @@
 #     nodes=$((nodes+1))
 # done
 
+#source $HOME/datascience_grand/http_proxy_polaris
 
-# source $HOME/datascience_grand/http_proxy_polaris
+#export CC=/opt/cray/pe/mpich/8.1.16/ofi/gnu/9.1/bin/mpicc  
+#export CXX=/opt/cray/pe/mpich/8.1.16/ofi/gnu/9.1/bin/mpic++
 
-# To setup the conda and python environments 
- 
-
+module load PrgEnv-cray
 module load conda/2022-07-19; conda activate
-export TMPDIR=/lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/logs/results
+# pip -v install --no-cache-dir git+https://github.com/hariharan-devarajan/dlio-profiler.git
 export MPICH_GPU_SUPPORT_ENABLED=0
-export CPATH=/lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/boost_1_82/boost_install_dir/:$CPATH
-export LD_LIBRARY_PATH=/lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/boost_1_82/boost_install_dir/lib/:$LD_LIBRARY_PATH
- 
 
-cd /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch
-# python -m venv /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/new-cos-py-env
-source /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/new-cos-py-env/bin/activate 
-export PYTHONPATH=/lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/new-cos-py-env/lib/python3.8/site-packages/:$PYTHONPATH
+export CPATH=/lus/grand/projects/datascience/kaushikv/dlio/dependencies/boost_lib:$CPATH
+export LD_LIBRARY_PATH=/lus/grand/projects/datascience/kaushikv/dlio/dependencies/boost_lib:$LD_LIBRARY_PATH
 
+export LD_LIBRARY_PATH=/home/kaushikvelusamy/.local/polaris/conda/2022-07-19/lib64:$LD_LIBRARY_PATH
 
-# cd /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies
+export LOGDIR=/lus/grand/projects/datascience/kaushikv/dlio/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/logs
 
-# Dependencies
-# pip install --upgrade pip
-# pip install "git+https://github.com/mlperf/logging.git"
-# pip install --extra-index-url https://developer.download.nvidia.com/compute/redist --upgrade nvidia-dali-cuda110
-# pip install packaging 
-# pip install torch
+echo $LD_LIBRARY_PATH
+echo $PYTHONPATH
+echo $CPATH
+echo $CC
+echo $CXX
+which cc
+which pip
+which python
+python --version
 
-# Dependency 3
-# git clone https://github.com/NVIDIA/apex
-# cd /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/apex
-# pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
-# cd ..
-
-# Dependency 4
-# module load PrgEnv-gnu
-# export CC=`which gcc`    
-# export CXX=`which g++`  
-# python -m pip install --no-cache-dir git+https://github.com/hariharan-devarajan/dlio-profiler.git
-# test : >>> from dlio_profiler.logger import dlio_logger
-
-
-# Dependency 5 
-# cd /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/dependencies/boost_1_82
-# install boost libarary and add the path to LD_LIBRARY_PATH and CPATH in setup.sh 
-
-
-
-# To Run from batch script
-
-#aprun -n 512 -N 4 python ./main.py +mpi.local_size=4 ++data.stage=/local/scratch/ +log.timestamp=ms_${nodes} +log.experiment_id=${PBS_JOBID} --config-name test_128x4x1_tfr
-#aprun -n 8 -N 4 python ./main.py +mpi.local_size=4 ++data.stage=/local/scratch/ +log.timestamp=ms_2 +log.experiment_id=${PBS_JOBID} --config-name test_128x4x1_tfr
-#aprun -n 4 -N 4 python ./main.py +mpi.local_size=4 ++data.stage=/local/scratch/ +log.timestamp=ms_2 +log.experiment_id=${PBS_JOBID} --config-name test_tfr
-
-
-#From interactive compute node 
-
-qsub -I -l select=1,walltime=00:20:00 -q debug -l filesystems=eagle -A datascience
-
-export LOGDIR=/lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/logs/results
-aprun -n 4 -N 4 python ./main.py +mpi.local_size=4 ++data.stage=/local/scratch/ +log.timestamp=ms_2 +log.experiment_id=${PBS_JOBID} --config-name test_tfr --output-dir /lus/eagle/projects/PolarisAT/kaushikv/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch/logs/outputs
-
-
-deactivate
-conda deactivate
-
-
-# cosflow code update
-#  def epoch_step(self, ------ value={"throughput": self._config["data"]["batch_size"] * self._config["data"]["num_nodes"] * 4 /
+cd /lus/grand/projects/datascience/kaushikv/dlio/dlio_ml_workloads/cosmoflow/cosmoflow-updated-alcf/pytorch
+aprun -n 44 -N 4 python ./main.py +mpi.local_size=4 ++data.stage=/local/scratch/ +log.timestamp=ms_8node_ +log.experiment_id=${PBS_JOBID} --config-name test_tfr 

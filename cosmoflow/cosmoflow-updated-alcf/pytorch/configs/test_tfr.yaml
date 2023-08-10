@@ -25,7 +25,7 @@ model:
       decay_steps: [32, 64]
       decay_values: [0.25, 0.125]
 
-    train_epochs: 50
+    train_epochs: 1
 
 data:
   batch_size: 1
@@ -36,7 +36,7 @@ data:
   preshuffle: True
   shard_type: "local"
   shard_multiplier: 1
-  root_dir: "/grand/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2"
+  root_dir: "/grand/datascience/hzheng/mlperf_hpc/hpc/cosmoflow/data/c64s16m/cosmoUniverse_2019_05_4parE_tf_v2" 
   stage: "/staging_area"
   stage_mode: "thread"
   stage_workers: 32

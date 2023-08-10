@@ -1,0 +1,9 @@
+apex
+dlio-profiler
+hydra-core
+mlperf-logging
+mpi4py
+nvidia-dali-cuda110
+omegaconf
+packaging 
+torch

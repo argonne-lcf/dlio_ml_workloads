@@ -1,68 +1,8 @@
 kaushikvelusamy@polaris-login-04:/lus/grand/projects/datascience/kaushikv/dlio/ml_workloads/resnet50/dl_scaling/resnet50/scripts> qsub -I -l select=2,walltime=1:00:00 -q debug-scaling -l filesystems=home:grand:eagle -A CSC250STDM10
 qsub: waiting for job 553382.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov to start
-
-
-
-
-
-
-
 qsub: job 553382.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov ready
 
-
-
-
-
-
-
-
-
-Lustre : Current Project Quota information for projects you're a member of:
-
-Name                           Type     Filesystem          Used          Quota           Grace
-===============================================================================================
-RAN                         Project     grand             682.3G             5T               -
-datascience                 Project     grand             129.4T           200T               -
-Comp_Perf_Workshop          Project     grand             194.7G             1T               -
-CSC250STDM10                Project     grand             4.343G            16T               -
-SDL_Workshop                Project     grand             271.1G             1T               -
-ATPESC_Instructors          Project     grand             41.16M             1T               -
-PolarisAT                   Project     grand             1.712P             3P               -
-ATPESC2022                  Project     grand             662.5G             1T               -
-sn_training                 Project     grand                 4k             1T               -
-alcf_training               Project     grand            5.597G*             1M               -
-WALSforAll                  Project     grand             3.037G             1T               -
-datascience                 Project     eagle             88.62T           160T               -
-SDL_Workshop                Project     eagle            13.64T*             1T               -
-PolarisAT                   Project     eagle             213.7T           1.5P               -
-PolarisAT                   Project     swift             277.4G             0k               -
-
-Lustre : Current Project Quota information for projects you're a member of:
-
-Name                           Type     Filesystem          Used          Quota           Grace
-===============================================================================================
-RAN                         Project     grand             682.3G             5T               -
-datascience                 Project     grand             129.4T           200T               -
-Comp_Perf_Workshop          Project     grand             194.7G             1T               -
-CSC250STDM10                Project     grand             4.343G            16T               -
-SDL_Workshop                Project     grand             271.1G             1T               -
-ATPESC_Instructors          Project     grand             41.16M             1T               -
-PolarisAT                   Project     grand             1.712P             3P               -
-ATPESC2022                  Project     grand             662.5G             1T               -
-sn_training                 Project     grand                 4k             1T               -
-alcf_training               Project     grand            5.597G*             1M               -
-WALSforAll                  Project     grand             3.037G             1T               -
-datascience                 Project     eagle             88.62T           160T               -
-SDL_Workshop                Project     eagle            13.64T*             1T               -
-PolarisAT                   Project     eagle             213.7T           1.5P               -
-PolarisAT                   Project     swift             277.4G             0k               -
-kaushikvelusamy@x3003c0s19b1n0:~> 
-kaushikvelusamy@x3003c0s19b1n0:~> 
-kaushikvelusamy@x3003c0s19b1n0:~> 
-kaushikvelusamy@x3003c0s19b1n0:~> 
-kaushikvelusamy@x3003c0s19b1n0:~> 
-kaushikvelusamy@x3003c0s19b1n0:~> 
-kaushikvelusamy@x3003c0s19b1n0:~> 
+ 
 kaushikvelusamy@x3003c0s19b1n0:~> cd /lus/grand/projects/datascience/kaushikv/dlio/ml_workloads/resnet50/dl_scaling/resnet50/scripts
 kaushikvelusamy@x3003c0s19b1n0:/lus/grand/projects/datascience/kaushikv/dlio/ml_workloads/resnet50/dl_scaling/resnet50/scripts> sh ./train_hvd.sh 
 

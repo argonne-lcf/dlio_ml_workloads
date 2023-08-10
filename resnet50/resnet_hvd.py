@@ -13,11 +13,30 @@ import os
 from enum import Enum
 
 import torchvision.models as models
+import signal
 
 # 1. Initialize Horovod
 import horovod.torch as hvd
 hvd.init()
 print("Horovod: I am worker %s of %s." %(hvd.rank(), hvd.size()))
+
+# For DLIO profiler
+from dlio_profiler.logger import dlio_logger as logger, fn_interceptor as dlp_event_logging
+dlp_pid=hvd.rank()
+dlp_log_file=f"/lus/grand/projects/datascience/kaushikv/dlio/dlio_ml_workloads/resnet50/dlp_logs-{dlp_pid}.pfw"
+dlp_data_dir="/eagle/datascience/ImageNet/ILSVRC/Data/CLS-LOC"
+log_inst=logger.initialize_log(dlp_log_file, dlp_data_dir, dlp_pid)
+#compute_dlp = dlp_event_logging("Compute")
+io_dlp = dlp_event_logging("IO", name="real_IO")
+
+# def capture_signal(signal_number, frame):
+#     log_inst.finalize()
+#     print("Kaushik-Calling-Finalize")
+#     print('Received Signal {}'.format(signal_number))
+#     exit(1)
+ 
+# signal.signal(signal.SIGABRT, capture_signal)
+#os.kill(os.getpid(), signal.SIGABRT)
 
 def metric_average(val, name):
     tensor = torch.tensor(val)
@@ -40,46 +59,49 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
 
     end = time.time()
     print("start training")
-    for i, (images, target) in enumerate(train_loader):
-        # measure data loading time
-        data_time.update(time.time() - end)
+    for i, (images, target) in io_dlp.iter(enumerate(train_loader)):
+            # measure data loading time
+            data_time.update(time.time() - end)
+                        
+            with dlp_event_logging("communication-except-io", name="cpu-gpu-transfer", step=i, epoch=epoch) as transfer:
+                # move data to the same device as model - cpu-gpu transfer
+                images = images.to(device)
+                target = target.to(device)
+            with dlp_event_logging("compute", name="model-compute-forward-prop", step=i, epoch=epoch) as compute:
+                # compute output
+                output = model(images)
+                loss = criterion(output, target)
+            
+            with dlp_event_logging("compute", name="model-compute-backward-prop", step=i, epoch=epoch) as compute:
+                # measure accuracy and record loss
+                acc1, acc5 = accuracy(output, target, topk=(1, 5))
+                losses.update(loss.item(), images.size(0))
+                top1.update(acc1[0], images.size(0))
+                top5.update(acc5[0], images.size(0))
 
-        # move data to the same device as model
-        images = images.to(device)
-        target = target.to(device)
+                # compute gradient and do SGD step
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
-        # compute output
-        output = model(images)
-        loss = criterion(output, target)
+            # measure elapsed time
+            if i == 0:
+                first_batch_time = time.time() - end
+            batch_time.update(time.time() - end)
+            end = time.time()
 
-        # measure accuracy and record loss
-        acc1, acc5 = accuracy(output, target, topk=(1, 5))
-        losses.update(loss.item(), images.size(0))
-        top1.update(acc1[0], images.size(0))
-        top5.update(acc5[0], images.size(0))
-
-        # compute gradient and do SGD step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        # measure elapsed time
-        if i == 0:
-            first_batch_time = time.time() - end
-        batch_time.update(time.time() - end)
-        end = time.time()
-
-        if i % args.print_freq == 0 and hvd.rank() == 0:
-            progress.display(i + 1)
-        if i >= args.steps and args.steps > 0:
-            if hvd.rank() == 0:
-                print('Throughput: {:.3f} images/s,'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time)), 
-                    'Batch size: {},'.format(args.batch_size),
-                    'Num of GPUs: {},'.format(hvd.size()),
-                    'Total time: {:.3f} s,'.format(batch_time.sum),
-                    'Average batch time: {:.3f} s,'.format(batch_time.avg),
-                    'First batch time: {:.3f} s'.format(first_batch_time))
-            exit()
+            if i % args.print_freq == 0 and hvd.rank() == 0:
+                progress.display(i + 1)
+            if i >= args.steps and args.steps > 0:
+                if hvd.rank() == 0:
+                    print('Throughput: {:.3f} images/s,'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time)), 
+                        'Batch size: {},'.format(args.batch_size),
+                        'Num of GPUs: {},'.format(hvd.size()),
+                        'Total time: {:.3f} s,'.format(batch_time.sum),
+                        'Average batch time: {:.3f} s,'.format(batch_time.avg),
+                        'First batch time: {:.3f} s'.format(first_batch_time))
+                log_inst.finalize()
+                exit()
 
 
 def test(model, device, test_loader):
@@ -227,9 +249,11 @@ def main():
         print(time.time()-t0)
 
         if args.save_model:
-            torch.save(model.state_dict(), "mnist_cnn.pt")
+            with dlp_event_logging("IO", name="checkpointing", step=i, epoch=epoch) as compute:
+                torch.save(model.state_dict(), "mnist_cnn.pt")
     
     test(model, device, val_loader)
+
 
 class Summary(Enum):
     NONE = 0

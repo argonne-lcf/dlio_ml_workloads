@@ -1,4 +1,8 @@
 **/dependencies
 **/dataset
- 
- 
+__pycache__
+**/results
+**/logs
+**/outputs
+*.pyc
+

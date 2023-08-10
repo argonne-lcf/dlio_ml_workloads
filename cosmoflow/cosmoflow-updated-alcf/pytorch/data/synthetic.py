@@ -30,6 +30,5 @@ class SyntheticDataset(torch.utils.data.Dataset):
     def __len__(self) -> int:
         return self.data.shape[0]
     
-    @io_dlp.log
     def __getitem__(self, image_idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         return self.data[image_idx], self.target[image_idx]

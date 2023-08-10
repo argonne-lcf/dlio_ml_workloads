@@ -36,9 +36,7 @@ data:
   preshuffle: True
   shard_type: "local"
   shard_multiplier: 1
-
-  root_dir: "/home/hzheng/datascience_grand/mlperf_hpc/hpc-nvidia/datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2"
-  #/grand/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2
+  root_dir: "/grand/datascience/MlPerf-datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2
   stage: "/staging_area"
   stage_mode: "thread"
   stage_workers: 32

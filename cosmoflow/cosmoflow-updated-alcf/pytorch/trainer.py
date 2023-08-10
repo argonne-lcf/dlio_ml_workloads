@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 from dlio_profiler.logger import dlio_logger as logger, fn_interceptor as dlp_event_logging
 compute_dlp = dlp_event_logging("Compute")
-io_dlp = dlp_event_logging("IO")
+io_dlp = dlp_event_logging("IO-part")
 
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -115,7 +115,7 @@ class Trainer(object):
             current_step = 0
             # t0 = time()
             try:
-                with dlp_event_logging("IO", step=current_step, epoch=epoch) as io:
+                with dlp_event_logging("IO-part", step=current_step, epoch=epoch) as io:
                     print(io._t1)
                     #io.update(step=current_step, epoch=epoch)
                     with torch.cuda.stream(self.prefetch_stream):
@@ -206,16 +206,16 @@ class Trainer(object):
                           metadata={'epoch_num': epoch + 1,
                                     'training_epoch_latency': train_epoch_elapsed,
                                     'eval_epoch_latency': eval_epoch_elapsed})
-        # utils.logger.event(key='tracked_stats',
-        #                    value={"throughput": TRAINING_DATASET_ITEMS /
-        #                           (train_epoch_elapsed / 1000)},
-        #                    metadata={'epoch_num': epoch+1,
-        #                              'step': epoch})
         utils.logger.event(key='tracked_stats',
-                           value={"throughput": self._config["data"]["batch_size"] * self._config["data"]["num_nodes"] * 4 /
+                           value={"throughput": TRAINING_DATASET_ITEMS /
                                   (train_epoch_elapsed / 1000)},
                            metadata={'epoch_num': epoch+1,
                                      'step': epoch})
+        # utils.logger.event(key='tracked_stats',
+        #                    value={"throughput": self._config["data"]["batch_size"] * self._config["data"]["num_nodes"] * 4 /
+        #                           (train_epoch_elapsed / 1000)},
+        #                    metadata={'epoch_num': epoch+1,
+        #                              'step': epoch})
         utils.logger.event(key='eval_error',
                                value=validation_score,
                                metadata={'epoch_num': epoch + 1})
