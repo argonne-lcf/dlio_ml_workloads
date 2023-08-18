@@ -1,0 +1,25 @@
+load env complete
+Using Horovod
+[DLIO_PROFILER PRINT]: log_file /lus/grand/projects/datascience/kaushikv/dlio/dlio_ml_workloads/resnet50/dlp_logs-0.pfw data_dirs /eagle/datascience/ImageNet/ILSVRC/Data/CLS-LOC and process 0
+
+Horovod: I am worker 3 of 4.
+start training
+Horovod: I am worker 2 of 4.
+start training
+Horovod: I am worker 0 of 4.
+start training
+Epoch: [1][   1/5005]	Time  3.848 ( 3.848)	Data  1.250 ( 1.250)	Loss 7.0273e+00 (7.0273e+00)	Acc@1   0.00 (  0.00)	Acc@5   0.00 (  0.00)
+Epoch: [1][   2/5005]	Time  1.496 ( 2.672)	Data  1.142 ( 1.196)	Loss 1.0979e+01 (9.0034e+00)	Acc@1   0.00 (  0.00)	Acc@5   1.56 (  0.78)
+Epoch: [1][   3/5005]	Time  1.197 ( 2.180)	Data  1.036 ( 1.143)	Loss 1.2414e+01 (1.0140e+01)	Acc@1   0.00 (  0.00)	Acc@5   0.00 (  0.52)
+Epoch: [1][   4/5005]	Time  1.123 ( 1.916)	Data  0.989 ( 1.104)	Loss 1.5113e+01 (1.1383e+01)	Acc@1   0.00 (  0.00)	Acc@5   0.00 (  0.39)
+Epoch: [1][   5/5005]	Time  1.099 ( 1.752)	Data  0.957 ( 1.075)	Loss 1.1932e+01 (1.1493e+01)	Acc@1   1.56 (  0.31)	Acc@5   1.56 (  0.62)
+Epoch: [1][   6/5005]	Time  1.183 ( 1.658)	Data  1.057 ( 1.072)	Loss 1.1581e+01 (1.1508e+01)	Acc@1   0.00 (  0.26)	Acc@5   0.00 (  0.52)
+Epoch: [1][   7/5005]	Time  1.156 ( 1.586)	Data  0.944 ( 1.054)	Loss 1.0694e+01 (1.1391e+01)	Acc@1   0.00 (  0.22)	Acc@5   1.56 (  0.67)
+Epoch: [1][   8/5005]	Time  1.196 ( 1.537)	Data  1.083 ( 1.057)	Loss 1.6619e+01 (1.2045e+01)	Acc@1   0.00 (  0.20)	Acc@5   0.00 (  0.59)
+Epoch: [1][   9/5005]	Time  1.278 ( 1.509)	Data  1.046 ( 1.056)	Loss 9.8728e+00 (1.1803e+01)	Acc@1   0.00 (  0.17)	Acc@5   1.56 (  0.69)
+Epoch: [1][  10/5005]	Time  1.322 ( 1.490)	Data  1.074 ( 1.058)	Loss 8.3521e+00 (1.1458e+01)	Acc@1   0.00 (  0.16)	Acc@5   1.56 (  0.78)
+Epoch: [1][  11/5005]	Time  1.204 ( 1.464)	Data  1.100 ( 1.062)	Loss 8.2245e+00 (1.1164e+01)	Acc@1   0.00 (  0.14)	Acc@5   1.56 (  0.85)
+Epoch: [1][  12/5005]	Time  1.305 ( 1.451)	Data  0.891 ( 1.047)	Loss 8.5556e+00 (1.0947e+01)	Acc@1   0.00 (  0.13)	Acc@5   1.56 (  0.91)
+Throughput: 188.795 images/s, Batch size: 64, Num of GPUs: 4, Total time: 17.408 s, Average batch time: 1.451 s, First batch time: 3.848 s
+Horovod: I am worker 1 of 4.
+start training

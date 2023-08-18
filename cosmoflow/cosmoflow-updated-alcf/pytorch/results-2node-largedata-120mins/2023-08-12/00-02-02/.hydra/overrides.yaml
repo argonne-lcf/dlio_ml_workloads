@@ -1,0 +1,4 @@
+- +mpi.local_size=4
+- ++data.stage=/local/scratch/
+- +log.timestamp=ms_10node_
+- +log.experiment_id=573995.polaris-pbs-01.hsn.cm.polaris.alcf.anl.gov

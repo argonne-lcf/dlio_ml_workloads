@@ -160,6 +160,8 @@ def main():
                     metavar='N', help='print frequency (default: 10)')
     parser.add_argument('--steps', default=100, type=int,
                     metavar='N', help='number of iterations to measure throughput, -1 for disable')
+    parser.add_argument('--save_model', default=0, type=int,
+                metavar='CK', help='checkpointing, -1 for disable')
 
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -180,7 +182,7 @@ def main():
     train_kwargs = {'batch_size': args.batch_size}
     val_kwargs = {'batch_size': args.test_batch_size}
     if use_cuda:
-        cuda_kwargs = {'num_workers': 0,
+        cuda_kwargs = {'num_workers': 4,
                        'pin_memory': True,
                        'shuffle': False}
         train_kwargs.update(cuda_kwargs)
@@ -249,10 +251,11 @@ def main():
         print(time.time()-t0)
 
         if args.save_model:
-            with dlp_event_logging("IO", name="checkpointing", step=i, epoch=epoch) as compute:
+            with dlp_event_logging("IO", name="checkpointing") as compute:
                 torch.save(model.state_dict(), "mnist_cnn.pt")
     
     test(model, device, val_loader)
+    #log_inst.finalize()
 
 
 class Summary(Enum):

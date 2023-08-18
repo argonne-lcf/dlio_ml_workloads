@@ -1,0 +1,12 @@
+
+Lmod is automatically replacing "nvhpc/21.9" with "gcc/11.2.0".
+
+
+Lmod is automatically replacing "PrgEnv-nvhpc/8.3.3" with "PrgEnv-gnu/8.3.3".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) cray-mpich/8.1.16
+
+=>> PBS: job killed: walltime 3627 exceeded limit 3600
+x3005c0s31b1n0.hsn.cm.polaris.alcf.anl.gov: rank 0 died from signal 15
