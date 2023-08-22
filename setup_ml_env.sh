@@ -1,5 +1,6 @@
 #!/bin/bash +x
 module load conda
+# Please change the following path accordingly 
 export ML_ENV=$HOME/PolarisAT/pyenvs/ml_workload
 if [[ -e $ML_ENV ]]; then
     conda activate $ML_ENV
