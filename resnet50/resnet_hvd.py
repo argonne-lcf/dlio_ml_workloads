@@ -23,7 +23,7 @@ print("Horovod: I am worker %s of %s." %(hvd.rank(), hvd.size()))
 # For DLIO profiler
 from dlio_profiler.logger import dlio_logger as logger, fn_interceptor as dlp_event_logging
 dlp_pid=hvd.rank()
-dlp_log_file=f"/lus/grand/projects/datascience/kaushikv/dlio/dlio_ml_workloads/resnet50/dlp_logs-{dlp_pid}.pfw"
+dlp_log_file=f"./dlp_logs-{dlp_pid}.pfw"
 dlp_data_dir="/eagle/datascience/ImageNet/ILSVRC/Data/CLS-LOC"
 log_inst=logger.initialize_log(dlp_log_file, dlp_data_dir, dlp_pid)
 #compute_dlp = dlp_event_logging("Compute")
@@ -37,6 +37,12 @@ io_dlp = dlp_event_logging("IO", name="real_IO")
  
 # signal.signal(signal.SIGABRT, capture_signal)
 #os.kill(os.getpid(), signal.SIGABRT)
+
+class MyImageFolder(datasets.ImageFolder):
+    @io_dlp.log
+    def __getitem__(self, index):
+        return super(MyImageFolder, self).__getitem__(index)
+
 
 def metric_average(val, name):
     tensor = torch.tensor(val)
@@ -199,7 +205,7 @@ def main():
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
-        train_dataset = datasets.ImageFolder(
+        train_dataset = MyImageFolder(
             traindir,
             transforms.Compose([
                 transforms.RandomResizedCrop(224),
@@ -208,7 +214,7 @@ def main():
                 normalize,
             ]))
 
-        val_dataset = datasets.ImageFolder(
+        val_dataset = MyImageFolder(
             valdir,
             transforms.Compose([
                 transforms.Resize(256),
