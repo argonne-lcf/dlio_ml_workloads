@@ -1,2 +1,0 @@
-pandas
-mpi4py

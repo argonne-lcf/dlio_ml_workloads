@@ -1,1 +1,0 @@
-/lus/theta-fs0/software/thetagpu/openmpi-4.0.5/bin/mpicxx -fPIC -O2 -Wall -Wextra  -shared -Wl,-soname,libCosmoflowExt.so -o libCosmoflowExt.so CMakeFiles/CosmoflowExt.dir/src/main.cc.o CMakeFiles/CosmoflowExt.dir/src/file_direct.cc.o CMakeFiles/CosmoflowExt.dir/src/aio_handler.cc.o  -lPython::NumPy -lBoost::python -lBoost::numpy -lBoost::iostreams -laio 

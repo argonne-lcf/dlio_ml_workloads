@@ -1,1 +1,0 @@
-export DATADIR="/lustre/fsw/mlperf/mlperf-hpc/mfutrega/data"

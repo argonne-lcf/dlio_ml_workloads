@@ -7,8 +7,7 @@
 #PBS -l filesystems=grand:home
 #PBS -q debug-scaling
 cd $PBS_O_WORKDIR
-module load conda
-conda activate mlperf
+source ../setup_ml_env.sh
 
 PBS_JOBSIZE=0
 for n in `get_hosts.py`

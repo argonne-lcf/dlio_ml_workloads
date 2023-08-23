@@ -9,11 +9,7 @@ from runtime.inference import evaluate
 from runtime.logging import mllog_event, mllog_start, mllog_end, CONSTANTS
 import time
 import numba
-from utility import perftrace
-from mpi4py import MPI
-import numpy as np
-comm = MPI.COMM_WORLD
-
+from pfw_utils.utility import Profile
 def emulate_compute(device, sec):
     if (str(device).find("GPU")!=-1):
         print("Putting GPU into sleep for %10.5f sec"%sec)
@@ -40,7 +36,8 @@ def lr_warmup(optimizer, init_lr, lr, current_epoch, warmup_epochs):
     for param_group in optimizer.param_groups:
         param_group['lr'] = init_lr + (lr - init_lr) * scale
 
-@perftrace.event_logging
+dlp_train = Profile("train")
+@dlp_train.log
 def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, callbacks, is_distributed, sleep=-1):
     rank = get_rank()
     world_size = get_world_size()
@@ -79,57 +76,50 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
             train_loader.sampler.set_epoch(epoch)
 
         loss_value = None
-        total_loss_value = 0
         optimizer.zero_grad()
         t0 = time.time()
-        for iteration, batch in enumerate(tqdm(train_loader, disable=(rank != 0) or not flags.verbose)):
+        for iteration, batch in dlp_train.iter(enumerate(tqdm(train_loader, disable=(rank != 0) or not flags.verbose))):
             image, label = batch
+            with Profile(cat="train", name="H2D"):
+                image, label = image.to(device), label.to(device)
             t1 = time.time()
-            perftrace.event_complete(name=f"loading batch:{image.shape[0]}", cat="train", ts = t0, dur=t1 - t0)
             t0 = time.time()
-            image, label = image.to(device), label.to(device)
-            t1 = time.time()
-            perftrace.event_complete(name=f"H2D", cat="train", ts = t0, dur=t1 - t0)
-            t0 = time.time()
-            for callback in callbacks:
-                callback.on_batch_start()
-            if (sleep >= 0):
-                emulate_compute(device, sleep)
-                t1 = time.time()
-                perftrace.event_complete(name=f"emulate_compute:step-{iteration}", cat="train", ts = t0, dur = t1 - t0)
-                if (rank==0):
-                    print(" training time [%d]: %10.5f" %(iteration, t1 - t0))
-                continue
-            
-            with autocast(enabled=flags.amp):
-                output = model(image)
-                loss_value = loss_fn(output, label)
-                loss_value /= flags.ga_steps
+            with Profile(cat="train", name="compute-forward"):
+                for callback in callbacks:
+                    callback.on_batch_start()
+                if (sleep >= 0):
+                    emulate_compute(device, sleep)
+                    t1 = time.time()
+                    if (rank==0):
+                        print(" training time [%d]: %10.5f" %(iteration, t1 - t0))
+                    continue
 
-            if flags.amp:
-                scaler.scale(loss_value).backward()
-            else:
-                loss_value.backward()
-
-            if (iteration + 1) % flags.ga_steps == 0:
+                with autocast(enabled=flags.amp):
+                    output = model(image)
+                    loss_value = loss_fn(output, label)
+                    loss_value /= flags.ga_steps
+            with Profile(cat="train", name="compute-backward"):
                 if flags.amp:
-                    scaler.step(optimizer)
-                    scaler.update()
+                    scaler.scale(loss_value).backward()
                 else:
-                    optimizer.step()
+                    loss_value.backward()
 
-                optimizer.zero_grad()
-            cumulative_loss.append(loss_value.detach().cpu().numpy())
-#            loss_value = reduce_tensor(loss_value, world_size).detach().cpu().numpy()
-#            cumulative_loss.append(loss_value)
+                if (iteration + 1) % flags.ga_steps == 0:
+                    if flags.amp:
+                        scaler.step(optimizer)
+                        scaler.update()
+                    else:
+                        optimizer.step()
+
+                    optimizer.zero_grad()
+
+            loss_value = reduce_tensor(loss_value, world_size).detach().cpu().numpy()
+            cumulative_loss.append(loss_value)
             t1 = time.time()
-            perftrace.event_complete(name=f"compute:step-{iteration}", cat="train", ts = t0, dur = t1 - t0)
             if (rank==0):
                 print(" training time [%d]: %10.8f (s)     %10.8f (ms)" %(iteration, t1 - t0, t0*1000))
             t0 = time.time()
-        total_loss = sum(cumulative_loss)
-        tt = np.zeros(1, dtype=MPI.FLOAT)
-        comm.Allreduce(total_loss, tt, op=MPI.SUM)
+
         mllog_end(key=CONSTANTS.EPOCH_STOP, sync=False,
                   metadata={CONSTANTS.EPOCH_NUM: epoch, 'current_lr': optimizer.param_groups[0]['lr']})
         if flags.lr_decay_epochs:
@@ -141,8 +131,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
             mllog_start(key=CONSTANTS.EVAL_START, value=epoch, metadata={CONSTANTS.EPOCH_NUM: epoch}, sync=False)
 
             eval_metrics = evaluate(flags, model, val_loader, loss_fn, score_fn, device, epoch)
-            #eval_metrics["train_loss"] = sum(cumulative_loss) / len(cumulative_loss)
-            eval_metrics["train_loss"] = tt[0] / len(cumulative_loss)            
+            eval_metrics["train_loss"] = sum(cumulative_loss) / len(cumulative_loss)
 
             mllog_event(key=CONSTANTS.EVAL_ACCURACY,
                         value=eval_metrics["mean_dice"],

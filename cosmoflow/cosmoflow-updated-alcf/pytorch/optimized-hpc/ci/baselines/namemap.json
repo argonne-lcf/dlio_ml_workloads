@@ -1,7 +1,0 @@
-{
-	"cosmoflow_mxnet": "cosmoflow-mxnet",
-	"cosmoflow_tensorflow": "cosmoflow-tensorflow",
-	"cosmoflow_pytorch": "cosmoflow-pytorch",
-	"deepcam_pytorch": "deepcam-pytorch",
-	"oc20_pytorch": "oc20-pytorch"
-}

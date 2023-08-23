@@ -1,4 +1,0 @@
-Set HTTP_PROXY and to http://proxy.alcf.anl.gov:3128
-:::MLLOG {"namespace": "", "time_ms": 1663094975693, "event_type": "POINT_IN_TIME", "key": "global_batch_size", "value": 2048, "metadata": {"file": "/lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow/data/cosmo.py", "lineno": 165}}
-:::MLLOG {"namespace": "", "time_ms": 1663094976807, "event_type": "POINT_IN_TIME", "key": "train_samples", "value": 524288, "metadata": {"file": "/lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow/data/cosmo.py", "lineno": 166}}
-:::MLLOG {"namespace": "", "time_ms": 1663094976807, "event_type": "POINT_IN_TIME", "key": "eval_samples", "value": 65536, "metadata": {"file": "/lus/grand/projects/datascience/hzheng/mlperf-2022/optimized-hpc/cosmoflow/tensorflow/data/cosmo.py", "lineno": 167}}

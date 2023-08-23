@@ -29,7 +29,7 @@ from runtime.distributed_utils import seed_everything, setup_seeds
 from runtime.logging import get_dllogger, mllog_start, mllog_end, mllog_event, mlperf_submission_log, mlperf_run_param_log
 from runtime.callbacks import get_callbacks
 import time
-from utility import perftrace
+from pfw_utils.utility import PerfTrace
 
 DATASET_SIZE = 168
 
@@ -37,7 +37,7 @@ def main():
     mllog.config(filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'unet3d.log'))
     flags = PARSER.parse_args()
     os.makedirs(flags.output_dir, exist_ok=True)
-    perftrace.set_logdir(flags.output_dir)
+    PerfTrace.initialize_log(flags.output_dir, os.path.abspath(flags.data_dir))
     mllog.config(filename=os.path.join(flags.output_dir, 'unet3d.log'))
     mllogger = mllog.get_mllogger()
     mllogger.logger.propagate = False

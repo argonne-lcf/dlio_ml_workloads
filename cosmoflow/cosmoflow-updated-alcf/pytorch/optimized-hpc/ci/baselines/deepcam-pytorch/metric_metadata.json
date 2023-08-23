@@ -1,8 +1,0 @@
-{
-    "d_init": {"goal": "MINIMIZE"},
-    "d_eval": {"goal": "MINIMIZE"},
-    "d_accuracy": {"goal": "MAXIMIZE"},
-    "d_score": {"goal": "MINIMIZE", "summary": "TRAIN_PERFORMANCE"},
-    "SLURM_WALLTIME": {"goal": "MINIMIZE"},
-    "throughput": {"goal": "MAXIMIZE"}
-}

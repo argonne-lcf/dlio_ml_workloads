@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 import time
 import os
-from utility import perftrace
+from pfw_utils.utility import Profile
 
 
 def get_train_transforms():
@@ -148,16 +148,11 @@ class PytTrain(Dataset):
     def __len__(self):
         return len(self.images)
     def __getitem__(self, idx):
-        t0 = time.time()
-        data = {"image": np.load(self.images[idx]), "label": np.load(self.labels[idx])}
-        t1 = time.time()
-        perftrace.event_complete(name="np.load", cat="dataloader", ts = t0, dur = t1 - t0)
-        print("np.load [ %3d ] [ PID %d ] : %10.8f (s)     %10.8f (ms)" %(idx, os.getpid(), t1 - t0, t0*1000))
-        t0 = time.time()
-        data = self.rand_crop(data)
-        data = self.train_transforms(data)
-        t1 = time.time()
-        perftrace.event_complete(name="preprocess", cat="dataloader", ts = t0, dur = t1 - t0)
+        with Profile(name="np.load", cat="IO"):
+            data = {"image": np.load(self.images[idx]), "label": np.load(self.labels[idx])}
+        with Profile(name="preprocess", cat="IO"):
+            data = self.rand_crop(data)
+            data = self.train_transforms(data)
         return data["image"], data["label"]
 
 
