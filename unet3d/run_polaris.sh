@@ -55,7 +55,7 @@ from mlperf_logging.mllog import constants
 from runtime.logging import mllog_event
 mllog_event(key=constants.CACHE_CLEAR, value=True)"
 
-aprun --cc depth -n ${NPROC} -N ${PPN} -d $((NUM_WORKERS*2)) -e OMP_NUM_THREADS=${NUM_WORKERS} ./local_rank.sh python3 main.py --data_dir ${DATASET_DIR} \
+aprun --cc depth -n ${NPROC} -N ${PPN} -d $((64/PPN)) -e OMP_NUM_THREADS=$((64/PPN)) ./local_rank.sh python3 main.py --data_dir ${DATASET_DIR} \
     --epochs ${MAX_EPOCHS} \
     --evaluate_every ${EVALUATE_EVERY} \
     --start_eval_at ${START_EVAL_AT} \

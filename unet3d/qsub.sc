@@ -6,9 +6,10 @@
 #PBS -A datascience
 #PBS -l filesystems=grand:home
 #PBS -q debug-scaling
-cd $PBS_O_WORKDIR
+#cd $PBS_O_WORKDIR
+cd /home/hzheng/PolarisAT/dlio_ml_workloads/unet3d
 source ../setup_ml_env.sh
-
+export IBV_FORK_SAFE=1
 PBS_JOBSIZE=0
 for n in `get_hosts.py`
 do
@@ -18,11 +19,7 @@ done
 export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
 NUM_WORKERS=4
 PPN=4
-OUTPUT=results/${TAG}/lustre
+OUTPUT=results/${TAG}/
 mkdir -p $OUTPUT
 
-DATA_DIR=data NUM_WOKRERS=${NUM_WORKERS} OUTPUT_DIR=${OUTPUT} NPROC=$((PBS_JOBSIZE*PPN)) PPN=${PPN} ./run_polaris.sh
-cp -rf data /local/scratch/
-OUTPUT=results/${TAG}/nvme
-mkdir -p $OUTPUT
-DATA_DIR=/local/scratch/data NUM_WOKRERS=${NUM_WORKERS} OUTPUT_DIR=${OUTPUT} NPROC=$((PBS_JOBSIZE*PPN)) PPN=${PPN} ./run_polaris.sh 
+DATA_DIR=datax$((PBS_JOBSIZE*PPN)) NUM_WOKRERS=${NUM_WORKERS} OUTPUT_DIR=${OUTPUT} NPROC=$((PBS_JOBSIZE*PPN)) PPN=${PPN} ./run_polaris.sh

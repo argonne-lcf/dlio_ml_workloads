@@ -47,7 +47,6 @@ def main():
     device = get_device(local_rank)
     is_distributed = init_distributed()
     world_size = get_world_size()
-    local_rank = get_rank()
     worker_seeds, shuffling_seeds = setup_seeds(flags.seed, flags.epochs, device)
     worker_seed = worker_seeds[local_rank]
     seed_everything(worker_seed)

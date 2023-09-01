@@ -50,6 +50,7 @@ class MyImageFolder(datasets.ImageFolder):
     def read_data(self, index):
         path, target = self.samples[index]
         return self.loader(path), target
+    @dlp_data.log
     def __getitem__(self, index):
         sample, target = self.read_data(index)
         sample, target = self.preprocess(sample, target)
@@ -61,7 +62,7 @@ def metric_average(val, name):
     avg_tensor = hvd.allreduce(tensor, name=name)
     return avg_tensor.item()
 
-dlp_train = Profile("TRAIN")
+dlp_train = Profile("train")
 def train(train_loader, model, criterion, optimizer, epoch, device, args):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
@@ -78,7 +79,7 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
 
     end = time.time()
     print("start training")
-    for i, (images, target) in dlp_data.iter(enumerate(train_loader)):
+    for i, (images, target) in dlp_train.iter(enumerate(train_loader)):
             # measure data loading time
             data_time.update(time.time() - end)
             with Profile(name="H2D", cat="train"):                        
@@ -184,6 +185,7 @@ def main():
                 metavar='CK', help='checkpointing, -1 for disable')
     parser.add_argument("--output_folder", default='output', type=str)
     args = parser.parse_args()
+    os.makedirs(args.output_folder, exist_ok=True)
     PerfTrace.initialize_log(args.output_folder, os.path.abspath(args.data))    
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     use_mps = not args.no_mps and torch.backends.mps.is_available()
@@ -274,7 +276,7 @@ def main():
         if args.save_model:
             with Profile(name="checkpointing", cat='IO'):
             #with dlp_event_logging("IO", name="checkpointing") as compute:
-                torch.save(model.state_dict(), "mnist_cnn.pt")
+                torch.save(model.state_dict(), "resnet50.pt")
     
     test(model, device, val_loader)
     #log_inst.finalize()

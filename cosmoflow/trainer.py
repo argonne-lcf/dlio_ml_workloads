@@ -68,6 +68,12 @@ class Trainer(object):
         self.zeroing_stream = torch.cuda.Stream()
         self.prefetch_stream = torch.cuda.Stream()
         self.last_scale = None
+        self.stop_at_steps = -1
+        try: 
+            if self._config['model']['train_steps'] > 0:
+                self.stop_at_steps = self._config['model']['train_steps']
+        except:
+            self.stop_at_steps = -1
 
         self._amp = amp
         if self._amp:
@@ -145,6 +151,8 @@ class Trainer(object):
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=False)):
                     utils.cudaProfilerStart()
                 current_step += 1
+                if (self.stop_at_steps >=0 and current_step >= self.stop_at_steps):
+                    should_run = False
             self.lr_scheduler.step()
             
     @dlp_eval.log

@@ -44,7 +44,7 @@ def get_dali_pipeline():
 
 
 train_data = DALIGenericIterator(
-    [get_dali_pipeline(batch_size=256)],
+    [get_dali_pipeline(batch_size=4)],
     ['data', 'label'],
     reader_name='Reader'
 )

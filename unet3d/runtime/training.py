@@ -10,6 +10,16 @@ from runtime.logging import mllog_event, mllog_start, mllog_end, CONSTANTS
 import time
 import numba
 from pfw_utils.utility import Profile
+import os
+skip_reduce = False
+try:
+    if os.environ['SKIP_REDUCE']=="1":
+        print("skip_reduce")
+        skip_reduce = True
+except:
+    skip_reduce = False
+    
+dlp_train = Profile("train")
 def emulate_compute(device, sec):
     if (str(device).find("GPU")!=-1):
         print("Putting GPU into sleep for %10.5f sec"%sec)
@@ -36,8 +46,6 @@ def lr_warmup(optimizer, init_lr, lr, current_epoch, warmup_epochs):
     for param_group in optimizer.param_groups:
         param_group['lr'] = init_lr + (lr - init_lr) * scale
 
-dlp_train = Profile("train")
-@dlp_train.log
 def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, callbacks, is_distributed, sleep=-1):
     rank = get_rank()
     world_size = get_world_size()
@@ -112,9 +120,13 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
                         optimizer.step()
 
                     optimizer.zero_grad()
+            with Profile(cat="train", name="communication-reduce_tensor"):
+                if (not skip_reduce):
+                    loss_value = reduce_tensor(loss_value, world_size).detach().cpu().numpy()
+                    cumulative_loss.append(loss_value)                    
+                else:
+                    loss_value = 0.0
 
-            loss_value = reduce_tensor(loss_value, world_size).detach().cpu().numpy()
-            cumulative_loss.append(loss_value)
             t1 = time.time()
             if (rank==0):
                 print(" training time [%d]: %10.8f (s)     %10.8f (ms)" %(iteration, t1 - t0, t0*1000))
@@ -131,7 +143,10 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
             mllog_start(key=CONSTANTS.EVAL_START, value=epoch, metadata={CONSTANTS.EPOCH_NUM: epoch}, sync=False)
 
             eval_metrics = evaluate(flags, model, val_loader, loss_fn, score_fn, device, epoch)
-            eval_metrics["train_loss"] = sum(cumulative_loss) / len(cumulative_loss)
+            if (skip_reduce):
+                eval_metrics["train_loss"] = sum(cumulative_loss) / len(cumulative_loss)
+            else:
+                eval_metrics["train_loss"] = 0.15
 
             mllog_event(key=CONSTANTS.EVAL_ACCURACY,
                         value=eval_metrics["mean_dice"],

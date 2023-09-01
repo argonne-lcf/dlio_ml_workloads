@@ -17,6 +17,7 @@ import torch
 
 from omegaconf import OmegaConf
 from typing import Any
+import hydra
 
 import utils
 
@@ -24,7 +25,8 @@ import utils
 class Application(abc.ABC):
     def __init__(self, config: OmegaConf):
         self._config = config
-
+        hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+        self.output_dir = hydra_cfg['runtime']['output_dir']
     def setup(self) -> None:
         pass
 
@@ -47,7 +49,7 @@ class MPIApplication(Application):
         else:
             self._distenv = utils.DistributedEnv.create_single()
             
-        utils.setup_logger(self._config["log"]["folder"], self._distenv,
+        utils.setup_logger(self.output_dir, self._distenv,
                            self._config["log"]["timestamp"],
                            self._config["log"]["experiment_id"])
 

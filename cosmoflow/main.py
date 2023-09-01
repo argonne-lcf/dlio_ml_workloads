@@ -15,6 +15,7 @@ import os
 import random
 from typing import Any
 import utils
+import hydra
 
 # For DLIO profiler
 from pfw_utils.utility import Profile, PerfTrace
@@ -51,17 +52,12 @@ from optimizer import get_optimizer
 class CosmoflowMain(PytorchApplication):
     def setup(self) -> None:
         super().setup()
-        try:
-            output_folder = self._config['log']['folder']
-        except:
-            output_folder="./results/"
-            self._config['output'] = output_folder
         if self._config['data']['dataset']!="synthetic":
             if self._config['data']['stage']!=False:
                 data_folder = self._config['data']['stage']
             else:
                 data_folder = self._config['data']['root_dir'] 
-        PerfTrace.initialize_log(output_folder, os.path.abspath(data_folder))
+        PerfTrace.initialize_log(self.output_dir, os.path.abspath(data_folder))
         with utils.ProfilerSection("initialization", profile=self._config["profile"]):
             utils.logger.event(key=utils.logger.constants.CACHE_CLEAR)
             utils.logger.start(key=utils.logger.constants.INIT_START)
