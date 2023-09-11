@@ -11,6 +11,10 @@ from torch.optim.lr_scheduler import StepLR
 import time
 import os
 from enum import Enum
+import logging, sys
+
+# this is to have pytorch profiler
+from torch.profiler import profile, record_function, ProfilerActivity
 
 import torchvision.models as models
 import signal
@@ -18,12 +22,18 @@ import signal
 # 1. Initialize Horovod
 import horovod.torch as hvd
 hvd.init()
-print("Horovod: I am worker %s of %s." %(hvd.rank(), hvd.size()))
+
+from nvidia.dali.plugin.pytorch import DALIClassificationIterator, LastBatchPolicy
+from nvidia.dali.pipeline import pipeline_def
+import nvidia.dali.types as types
+import nvidia.dali.fn as fn
 
 # For DLIO profiler
 from pfw_utils.utility import Profile, PerfTrace
 dlp = Profile("RESNET50")
 #compute_dlp = dlp_event_logging("Compute")
+log = logging.getLogger('ResNet50')
+log.setLevel(logging.DEBUG)
 
 
 # def capture_signal(signal_number, frame):
@@ -78,7 +88,7 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
     model.train()    
 
     end = time.time()
-    print("start training")
+    log.info("start training")
     for i, (images, target) in dlp_train.iter(enumerate(train_loader)):
             # measure data loading time
             data_time.update(time.time() - end)
@@ -115,13 +125,13 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
                 progress.display(i + 1)
             if i >= args.steps and args.steps > 0:
                 if hvd.rank() == 0:
-                    print('Throughput: {:.3f} images/s,'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time)), 
-                        'Batch size: {},'.format(args.batch_size),
-                        'Num of GPUs: {},'.format(hvd.size()),
-                        'Total time: {:.3f} s,'.format(batch_time.sum),
-                        'Average batch time: {:.3f} s,'.format(batch_time.avg),
-                        'First batch time: {:.3f} s'.format(first_batch_time))
-                log_inst.finalize()
+                    log.info('Throughput: {:.3f} images/s,\n'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time))+
+                        'Batch size: {}\n'.format(args.batch_size)+
+                        'Num of GPUs: {}\n'.format(hvd.size())+
+                        'Total time: {:.3f} s\n'.format(batch_time.sum)+
+                        'Average batch time: {:.3f} s\n'.format(batch_time.avg)+
+                        'First batch time: {:.3f} s\n'.format(first_batch_time))
+#                log_inst.finalize()
                 exit()
 
 
@@ -140,7 +150,7 @@ def test(model, device, test_loader):
     test_loss /= len(test_loader.dataset)
 
     if hvd.rank() == 0: 
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        logging.info('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
             test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
 
@@ -183,9 +193,28 @@ def main():
                     metavar='N', help='number of iterations to measure throughput, -1 for disable')
     parser.add_argument('--save_model', default=0, type=int,
                 metavar='CK', help='checkpointing, -1 for disable')
-    parser.add_argument("--output_folder", default='output', type=str)
+    parser.add_argument("--output_folder", default='outputs', type=str)
+    parser.add_argument("--profile", action='store_true', help="use pytorch profiler")
+    parser.add_argument("--num_workers", default=4, type=int)
     args = parser.parse_args()
     os.makedirs(args.output_folder, exist_ok=True)
+
+    # create logger with 'spam_application'
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(f"{args.output_folder}/resnet50.log")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    log.addHandler(fh)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.ERROR)
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
+    
+    log.info("Horovod: I am worker %s of %s." %(hvd.rank(), hvd.size()))
+    
     PerfTrace.initialize_log(args.output_folder, os.path.abspath(args.data))    
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     use_mps = not args.no_mps and torch.backends.mps.is_available()
@@ -205,7 +234,7 @@ def main():
     train_kwargs = {'batch_size': args.batch_size}
     val_kwargs = {'batch_size': args.test_batch_size}
     if use_cuda:
-        cuda_kwargs = {'num_workers': 4,
+        cuda_kwargs = {'num_workers': args.num_workers,
                        'pin_memory': True,
                        'shuffle': False}
         train_kwargs.update(cuda_kwargs)
@@ -213,7 +242,8 @@ def main():
 
     # Data loading code
     if args.dummy:
-        print("=> Dummy data is used!")
+        if hvd.rank==0:
+            log.info("=> Dummy data is used!")
         train_dataset = datasets.FakeData(1281167, (3, 224, 224), 1000, transforms.ToTensor())
         val_dataset = datasets.FakeData(50000, (3, 224, 224), 1000, transforms.ToTensor())
     else:
@@ -266,12 +296,14 @@ def main():
     for epoch in range(1, args.epochs + 1):
         # train(args, model, criterion, device, train_loader, optimizer, epoch)
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, device, args)
-
+        if (args.profile and epoch == 1):
+            with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+                train(train_loader, model, criterion, optimizer, epoch, device, args)
+            prof.export_chrome_trace(f"{args.output_folder}/trace.json")
         # test(model, device, val_loader)
         scheduler.step()
     if hvd.rank() == 0:
-        print(time.time()-t0)
+        log.info(time.time()-t0)
 
         if args.save_model:
             with Profile(name="checkpointing", cat='IO'):
@@ -309,7 +341,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
     def all_reduce(self):
-        print("all_reduce")
+        log.info("all_reduce")
         if torch.cuda.is_available():
             device = torch.device("cuda")
         elif torch.backends.mps.is_available():
@@ -350,12 +382,12 @@ class ProgressMeter(object):
     def display(self, batch):
         entries = [self.prefix + self.batch_fmtstr.format(batch)]
         entries += [str(meter) for meter in self.meters]
-        print('\t'.join(entries))
+        log.info('\t'.join(entries))
         
     def display_summary(self):
         entries = [" *"]
         entries += [meter.summary() for meter in self.meters]
-        print(' '.join(entries))
+        log.info(' '.join(entries))
 
     def _get_batch_fmtstr(self, num_batches):
         num_digits = len(str(num_batches // 1))

@@ -1,6 +1,9 @@
 #!/bin/bash
 # modify this accordingly 
 export VENV_HOME=$HOME/PolarisAT/pyenvs/dlio
+if [ -z "${PBS_NODEFILE}" ]; then
+    export PBS_JOBSIZE=$(cat $PBS_NODEFILE | sort | uniq | sed -n $=)
+fi
 if [[ -e $VENV_HOME ]]; then
     module load conda
     source ${VENV_HOME}/bin/activate

@@ -26,7 +26,6 @@ from typing import Iterator, Tuple, Optional
 from model.utils import Convolution3DLayout
 
 import utils
-# from profile import perftrace
 from time import sleep, time
 DataIter = Iterator[Tuple[torch.Tensor, torch.Tensor]]
 
@@ -111,7 +110,6 @@ class Trainer(object):
                     loss = self.loss_fn(y, y_hat)
                     loss.backward()
                     self.optimizer.step()
-    # @perftrace.event_logging
     def train_epoch(self,
                     train_iter: DataIter,
                     epoch: int):
@@ -165,20 +163,18 @@ class Trainer(object):
             self.score_fn.reset()
 
             with torch.no_grad():
-                for step, input_data in enumerate(eval_iter):
-                    data = self._convert(input_data[0])
-                    label = input_data[1]
-                    data = _convert_format(data)
-                    # t0 = time()
-                    if self._amp:
-                        with torch.cuda.amp.autocast():
+                for step, input_data in dlp_eval.iter(enumerate(eval_iter)):
+                    with Profile("Evaluation", name="eval-step"):
+                        data = self._convert(input_data[0])
+                        label = input_data[1]
+                        data = _convert_format(data)
+                        if self._amp:
+                            with torch.cuda.amp.autocast():
+                                y = self.model(data)
+                        else:
                             y = self.model(data)
-                    else:
-                        y = self.model(data)
 
-                    self.score_fn.update(y.float(), label)
-                    # t1 = time()
-                    # perftrace.event_complete('eval', 'eval_step', t0, t1 - t0)
+                        self.score_fn.update(y.float(), label)
         return self.score_fn.get_value(distributed=not self._distenv.is_single,
                                        pg_handler=None)
     @dlp_eval.log

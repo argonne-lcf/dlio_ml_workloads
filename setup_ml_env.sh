@@ -1,6 +1,11 @@
 #!/bin/bash +x
 module load conda
+export RDMAV_HUGEPAGES_SAFE=1
+export IBV_FORK_SAFE=1
 export WORKDIR=/home/hzheng/PolarisAT/dlio_ml_workloads/
+if [ -v PBS_NODEFILE ]; then
+    export PBS_JOBSIZE=$(cat $PBS_NODEFILE | sort | uniq | sed -n $=)
+fi
 # Please change the following path accordingly 
 export ML_ENV=$HOME/PolarisAT/pyenvs/ml_workload
 if [[ -e $ML_ENV ]]; then
