@@ -87,6 +87,7 @@ class InputPipelineCore(object):
     def _build_pipeline(self, **kwargs):
         pipeline = Pipeline(batch_size=self._config["dali_threads"],
                             num_threads=self._config["dali_threads"],
+                            py_num_workers=self._config['dali_threads'], 
                             device_id=self._device,
                             prefetch_queue_depth={"cpu_size": 4, "gpu_size": 2})
         with pipeline:

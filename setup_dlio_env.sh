@@ -23,6 +23,7 @@ else
     ## Main package
     git clone https://github.com/argonne-lcf/dlio_benchmark.git
     cd dlio_benchmark
+    pip install -r requirements.txt
     python setup.py build
     python setup.py install
     cd -
