@@ -17,6 +17,7 @@ from omegaconf import DictConfig
 
 
 import nvidia.dali.fn as dali_fn
+import nvidia.dali.math as dali_math
 import nvidia.dali.types as dali_types
 
 
@@ -37,4 +38,8 @@ class SyntheticDataPipeline(InputPipelineCore):
                                             shape=list(
                                                 self._config["target_shape"]),
                                             stddev=1.0, device="gpu")
+
+        input_data = dali_math.clamp(input_data, 0, 255)
+        input_label = dali_math.clamp(input_label, -0.9, 0.9)
+
         return input_data, input_label

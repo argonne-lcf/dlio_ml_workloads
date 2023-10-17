@@ -340,7 +340,7 @@ class ThreadPoolDirectExecutor(AbstractStagerExecutor):
                     profile: bool = False,
                     compressed: bool = False,
                     sizes: Optional[np.ndarray] = None) -> Callable[[], bool]:
-        assert data_target_list is None, "ThreadPoolDirectExecutor can bu used only with packed data samples"
+        assert data_target_list is None, "ThreadPoolDirectExecutor can be used only with packed data samples"
 
         total_files_to_stage = len(data_sample_list)
         if self._dist_comm is not None:

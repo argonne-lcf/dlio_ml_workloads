@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from mlperf_common.frameworks.pyt import PyTCommunicationHandler
+from mlperf_common.logging import MLLoggerWrapper
 from typing import Optional, Any
 from ctypes import cdll
 
@@ -162,14 +164,20 @@ class ExecutionTimer(object):
 
     def __enter__(self):
         torch.cuda.nvtx.range_push(self._name)
-        self._start_time = time.time()
+        self.start()
         return self
 
     def __exit__(self, *args, **kwargs):
         torch.cuda.nvtx.range_pop()
         self._stop_time = time.time()
 
+    def start(self):
+        self._start_time = time.time()
+
     def time_elapsed(self) -> float:
+        if not hasattr(self, "_stop_time"):
+            return time.time() - self._start_time
+
         return self._stop_time - self._start_time
 
 
@@ -190,18 +198,18 @@ def cudaProfilerStop():
 
 class Logger(object):
     def __init__(self,
-                 folder: str, 
                  distenv: DistributedEnv,
                  timestamp: str,
                  experiment_id: str):
 
-        logger_path = os.path.join(
-            folder, f"{timestamp}_{distenv.instance if distenv.num_instances > 1 else experiment_id}.log")
-        os.makedirs(folder, exist_ok=True)
-        self.mllogger = mllog.get_mllogger()
-        mllog.config(filename=logger_path)
+        if int(os.getenv("THROUGPUT_RUN", "0")):
+            _instance = int(os.getenv("EXPERIMENT_ID", "0"))
+            logger_path = os.path.join("/results", f"{timestamp}_{_instance}.log")
+            mllog.config(filename=logger_path)
         self.constants = mllog.constants
         self.distenv = distenv
+
+        self.mllogger = MLLoggerWrapper(PyTCommunicationHandler(), value=None)
 
     def event(self, *args, **kwargs):
         self._print(self.mllogger.event, *args, **kwargs)
@@ -222,6 +230,5 @@ class Logger(object):
         else:
             metadata = {"instance": self.distenv.instance}
 
-        if (self.distenv.master and uniq) or (not uniq):
-            logger(key=key, value=value, metadata=metadata,
-                   stack_offset=stack_offset)
+        logger(key=key, value=value, metadata=metadata,
+               stack_offset=stack_offset, unique=uniq)

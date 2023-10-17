@@ -104,7 +104,14 @@ class LRSchedulerCalculator(object):
         utils.logger.event(key=utils.logger.constants.OPT_LR_DECAY_FACTOR,
                            value=self._decay_values)
 
+    def disable(self) -> None:
+        print("Disabling LRScheduler")
+        self._target_mult = 0
+
     def __call__(self, epoch: int) -> float:
+        if self._target_mult == 0:
+            return 0
+
         if epoch < self._warmup_epochs and self._warmup_epochs > 0:
             return ((self._target_mult - 1) * epoch / self._warmup_epochs) + 1
         else:

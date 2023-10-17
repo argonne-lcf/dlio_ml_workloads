@@ -17,6 +17,7 @@ from data.dali_core import InputPipelineCore
 
 from omegaconf import DictConfig
 from typing import Literal, List, Optional, Tuple
+from itertools import chain
 
 
 import nvidia.dali.fn as dali_fn
@@ -37,14 +38,21 @@ class TFRecordDataPipeline(InputPipelineCore):
                  mode: Literal["train", "validation"],
                  sample_count: int,
                  device: int,
-                 seed: Optional[int] = None):
-        super().__init__(config, distenv, sample_count, device, build_now=False)
+                 seed: Optional[int] = None,
+                 threads: Optional[int] = None):
+        super().__init__(config, distenv, sample_count, device, 
+                         build_now=False, threads=threads)
 
         self._file_root_path = os.path.join(config["root_dir"], mode)
         self._file_staged_path = pathlib.Path(os.path.join(
             config["stage"], mode) if config["stage"] != False else self._file_root_path)
 
         self._shuffle = config["shuffle"] and mode == "train"
+        if "use_direct_io" not in config:
+            self._use_direct_io = True
+        else:
+            self._use_direct_io = config["use_direct_io"]
+
         self._seed = seed if seed else random.randint(0, 65536)
         self._mode = mode
 
@@ -53,11 +61,6 @@ class TFRecordDataPipeline(InputPipelineCore):
         self._build()
 
     def get_inputs(self, pipeline, **kwargs):
-        try:
-            dont_use_mmap = self._config['dont_use_mmap']
-        except:
-            dont_use_mmap = False
-    
         sample_size_data = np.prod(self._config["sample_shape"])
         sample_size_label = np.prod(self._config["target_shape"])
         tf_reader = dali_fn.readers.tfrecord(features={"x": dali_tfrec.FixedLenFeature((), dali_tfrec.string, ""),
@@ -67,8 +70,9 @@ class TFRecordDataPipeline(InputPipelineCore):
                                              index_path=[str(self._file_staged_path / f"{sample}.idx")
                                                          for sample in self._file_list_data],
                                              bytes_per_sample_hint=sample_size_data + sample_size_label,
-                                             prefetch_queue_depth=8,
-                                             dont_use_mmap=dont_use_mmap,
+                                             prefetch_queue_depth=64,
+                                             use_o_direct=self._use_direct_io,
+                                             dont_use_mmap=self._use_direct_io,
                                              num_shards=self._num_shards,
                                              shard_id=self._shard_id,
                                              stick_to_shard=True,
@@ -172,10 +176,14 @@ class TFRecordDataPipeline(InputPipelineCore):
               device: int,
               seed: Optional[int] = None,
               **kwargs) -> Tuple[InputPipelineCore, InputPipelineCore]:
+
         train_args = {k[6:]: v for k,
-                      v in kwargs.items() if k.startswith("train_")}
+                      v in chain(config.items(), kwargs.items()) 
+                      if k.startswith("train_")}
         val_args = {k[4:]: v for k,
-                    v in kwargs.items() if k.startswith("val_")}
+                    v in chain(config.items(), kwargs.items()) 
+                    if k.startswith("val_")}
+
         default_dict = {"device": device,
                         "seed": seed}
 

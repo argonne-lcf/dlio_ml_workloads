@@ -73,6 +73,7 @@ def metric_average(val, name):
     return avg_tensor.item()
 
 dlp_train = Profile("train")
+dlp_eval = Profile("eval")
 def train(train_loader, model, criterion, optimizer, epoch, device, args):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
@@ -97,13 +98,10 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
                 images = images.to(device)
                 target = target.to(device)
             with Profile(name="compute-forward", cat="train"):
-                #            with dlp_event_logging("compute", name="model-compute-forward-prop", step=i, epoch=epoch) as compute:
                 # compute output
                 output = model(images)
                 loss = criterion(output, target)
             with Profile(name="compute-backward", cat="train"):
- #           with dlp_event_logging("compute", name="model-compute-backward-prop", step=i, epoch=epoch) as compute:
-
                 # measure accuracy and record loss
                 acc1, acc5 = accuracy(output, target, topk=(1, 5))
                 losses.update(loss.item(), images.size(0))
@@ -123,7 +121,7 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
 
             if i % args.print_freq == 0 and hvd.rank() == 0:
                 progress.display(i + 1)
-            if i >= args.steps and args.steps > 0:
+            if i == args.steps-1 and args.steps > 0:
                 if hvd.rank() == 0:
                     log.info('Throughput: {:.3f} images/s,\n'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time))+
                         'Batch size: {}\n'.format(args.batch_size)+
@@ -131,8 +129,9 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
                         'Total time: {:.3f} s\n'.format(batch_time.sum)+
                         'Average batch time: {:.3f} s\n'.format(batch_time.avg)+
                         'First batch time: {:.3f} s\n'.format(first_batch_time))
+                return 0
 #                log_inst.finalize()
-                exit()
+
 
 
 def test(model, device, test_loader):
@@ -140,12 +139,14 @@ def test(model, device, test_loader):
     test_loss = 0
     correct = 0
     with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-            correct += pred.eq(target.view_as(pred)).sum().item()
+        for data, target in dlp_eval(test_loader):
+            with Profile(name="H2D", cat="eval"):                                    
+                data, target = data.to(device), target.to(device)
+            with Profile(name="compute", cat="eval"):
+                output = model(data)
+                test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+                pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+                correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
 
@@ -157,13 +158,13 @@ def test(model, device, test_loader):
 def main():
     # Training settings
     parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
-    parser.add_argument('--batch-size', type=int, default=256, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
     parser.add_argument('data', metavar='DIR', nargs='?', default='/eagle/datascience/ImageNet/ILSVRC/Data/CLS-LOC/',
                     help='path to dataset (default: imagenet)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=90, metavar='N',
+    parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 14)')
     parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
                         help='learning rate (default: 1.0)')
@@ -189,7 +190,7 @@ def main():
                     dest='weight_decay')
     parser.add_argument('-p', '--print-freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
-    parser.add_argument('--steps', default=100, type=int,
+    parser.add_argument('--steps', default=10, type=int,
                     metavar='N', help='number of iterations to measure throughput, -1 for disable')
     parser.add_argument('--save_model', default=0, type=int,
                 metavar='CK', help='checkpointing, -1 for disable')
@@ -242,7 +243,7 @@ def main():
 
     # Data loading code
     if args.dummy:
-        if hvd.rank==0:
+        if hvd.rank()==0:
             log.info("=> Dummy data is used!")
         train_dataset = datasets.FakeData(1281167, (3, 224, 224), 1000, transforms.ToTensor())
         val_dataset = datasets.FakeData(50000, (3, 224, 224), 1000, transforms.ToTensor())
@@ -293,24 +294,27 @@ def main():
 
     scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
     t0 = time.time()
-    for epoch in range(1, args.epochs + 1):
-        # train(args, model, criterion, device, train_loader, optimizer, epoch)
-        # train for one epoch
-        if (args.profile and epoch == 1):
-            with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+    if args.profile:
+        with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:    
+            for epoch in range(1, args.epochs + 1):
                 train(train_loader, model, criterion, optimizer, epoch, device, args)
-            prof.export_chrome_trace(f"{args.output_folder}/trace.json")
-        # test(model, device, val_loader)
-        scheduler.step()
+                # test(model, device, val_loader)
+                scheduler.step()
+        prof.export_chrome_trace(f"{args.output_folder}/trace-{hvd.rank()}.json")
+    else:
+        for epoch in range(1, args.epochs + 1):
+            train(train_loader, model, criterion, optimizer, epoch, device, args)
+            # test(model, device, val_loader)
+            scheduler.step()
+        
     if hvd.rank() == 0:
         log.info(time.time()-t0)
-
         if args.save_model:
             with Profile(name="checkpointing", cat='IO'):
             #with dlp_event_logging("IO", name="checkpointing") as compute:
                 torch.save(model.state_dict(), "resnet50.pt")
     
-    test(model, device, val_loader)
+    #test(model, device, val_loader)
     #log_inst.finalize()
 
 

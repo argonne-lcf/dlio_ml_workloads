@@ -14,10 +14,6 @@
 from omegaconf.dictconfig import DictConfig
 import torch
 import torch.nn as nn
-from pfw_utils.utility import Profile
-dlp_train = Profile("train")
-dlp_data = Profile("IO")
-dlp_eval = Profile("eval")
 
 from torch.nn.parallel import DistributedDataParallel as DDP
 
@@ -26,7 +22,13 @@ from typing import Iterator, Tuple, Optional
 from model.utils import Convolution3DLayout
 
 import utils
+#For DLIO profiler
+from pfw_utils.utility import Profile
+dlp_train = Profile("train")
+dlp_data = Profile("IO")
+dlp_eval = Profile("eval")
 from time import sleep, time
+
 DataIter = Iterator[Tuple[torch.Tensor, torch.Tensor]]
 
 TRAINING_DATASET_ITEMS = 524288
@@ -36,7 +38,7 @@ def _should_mark_profiling(epoch: int, step: int, config: str, start: bool) -> b
     temp = config.split(',', 1)
     temp = [temp[0]] + temp[1].split('-', 1)
 
-    return temp[0] == epoch and temp[2 - int(start)] == step
+    return int(temp[0]) == epoch and int(temp[2 - int(start)]) == step
 
 
 def _convert_format(input_tensor: torch.Tensor) -> torch.Tensor:
@@ -67,18 +69,11 @@ class Trainer(object):
         self.zeroing_stream = torch.cuda.Stream()
         self.prefetch_stream = torch.cuda.Stream()
         self.last_scale = None
-        self.stop_at_steps = -1
-        try: 
-            if self._config['model']['train_steps'] > 0:
-                self.stop_at_steps = self._config['model']['train_steps']
-        except:
-            self.stop_at_steps = -1
 
         self._amp = amp
         if self._amp:
             self.scaler_ = torch.cuda.amp.GradScaler()
-    # @perftrace.event_logging
-    @dlp_train.log
+
     def train_step(self,
                    x: torch.Tensor,
                    y_hat: torch.Tensor) -> None:
@@ -110,6 +105,7 @@ class Trainer(object):
                     loss = self.loss_fn(y, y_hat)
                     loss.backward()
                     self.optimizer.step()
+
     def train_epoch(self,
                     train_iter: DataIter,
                     epoch: int):
@@ -118,17 +114,15 @@ class Trainer(object):
             self.model.train()
             should_run = True
             current_step = 0
-            # t0 = time()
+
             try:
                 with Profile(cat="IO", name="data_iter"):
-                    #io.update(step=current_step, epoch=epoch)
                     with torch.cuda.stream(self.prefetch_stream):
                         input_data = next(train_iter)
             except StopIteration:
                 should_run = False
 
             while should_run:
-
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=True)):
                     utils.cudaProfilerStart()
@@ -138,22 +132,22 @@ class Trainer(object):
                         data = self._convert(input_data[0])
                         data = _convert_format(data)
                         label = input_data[1]
+
                 try:
-                    with Profile(cat="IO", name="data_iter"):
+                    with Profile(cat="IO", name="data_iter"):   
                         with torch.cuda.stream(self.prefetch_stream):
                             input_data = next(train_iter)
                 except StopIteration:
                     should_run = False
-                self.train_step(data, label)
+                with Profile(cat="train", name="compute"):
+                    self.train_step(data, label)
+
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=False)):
-                    utils.cudaProfilerStart()
+                    utils.cudaProfilerStop()
                 current_step += 1
-                if (self.stop_at_steps >=0 and current_step >= self.stop_at_steps):
-                    should_run = False
             self.lr_scheduler.step()
-            
-    @dlp_eval.log
+
     def eval_epoch(self,
                    eval_iter: DataIter,
                    epoch: int) -> float:
@@ -164,20 +158,22 @@ class Trainer(object):
 
             with torch.no_grad():
                 for step, input_data in dlp_eval.iter(enumerate(eval_iter)):
-                    with Profile("Evaluation", name="eval-step"):
+                    with Profile("eval", name="preprocess"):
                         data = self._convert(input_data[0])
                         label = input_data[1]
                         data = _convert_format(data)
+                    with Profile("eval", name="compute"):
                         if self._amp:
                             with torch.cuda.amp.autocast():
                                 y = self.model(data)
                         else:
                             y = self.model(data)
 
-                        self.score_fn.update(y.float(), label)
+                    self.score_fn.update(y.float(), label)
+
         return self.score_fn.get_value(distributed=not self._distenv.is_single,
                                        pg_handler=None)
-    @dlp_eval.log
+
     def epoch_step(self,
                    train_iter: DataIter,
                    eval_iter: DataIter,
@@ -208,11 +204,6 @@ class Trainer(object):
                                   (train_epoch_elapsed / 1000)},
                            metadata={'epoch_num': epoch+1,
                                      'step': epoch})
-        # utils.logger.event(key='tracked_stats',
-        #                    value={"throughput": self._config["data"]["batch_size"] * self._config["data"]["num_nodes"] * 4 /
-        #                           (train_epoch_elapsed / 1000)},
-        #                    metadata={'epoch_num': epoch+1,
-        #                              'step': epoch})
         utils.logger.event(key='eval_error',
                                value=validation_score,
                                metadata={'epoch_num': epoch + 1})

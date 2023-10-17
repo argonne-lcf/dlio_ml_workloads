@@ -29,6 +29,6 @@ class SyntheticDataset(torch.utils.data.Dataset):
 
     def __len__(self) -> int:
         return self.data.shape[0]
-    
-    def __getitem__(self, image_idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        return self.data[image_idx], self.target[image_idx]
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self.data[idx], self.target[idx]

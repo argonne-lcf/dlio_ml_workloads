@@ -15,20 +15,6 @@ import os
 import random
 from typing import Any
 import utils
-import hydra
-
-# For DLIO profiler
-from pfw_utils.utility import Profile, PerfTrace
-
-# def capture_signal(signal_number, frame):
-#     log_inst.finalize()
-#     print("Kaushik-Calling-Finalize")
-#     print('Received Signal {}'.format(signal_number))
-#     exit(1)
- 
-# signal.signal(signal.SIGSTOP, capture_signal)
-# os.kill(os.getpid(), signal.SIGSTOP)
-
 
 from data.dali_npy import NPyLegacyDataPipeline
 from data.dali_tfr_gzip import TFRecordDataPipeline
@@ -48,32 +34,38 @@ from model.cosmoflow import get_standard_cosmoflow_model, Convolution3DLayout
 from trainer import Trainer
 from optimizer import get_optimizer
 
+# For DLIO profiler
+from pfw_utils.utility import Profile, PerfTrace
 
 class CosmoflowMain(PytorchApplication):
     def setup(self) -> None:
         super().setup()
+        #For DLIO profiler
         if self._config['data']['dataset']!="synthetic":
             if self._config['data']['stage']!=False:
                 data_folder = self._config['data']['stage']
             else:
-                data_folder = self._config['data']['root_dir'] 
-        PerfTrace.initialize_log(self.output_dir, os.path.abspath(data_folder))
+                data_folder = self._config['data']['root_dir']
+        else:
+            data_folder="./"
+        
+        try:
+            pfw_logdir = self._config['pfw_logdir']
+        except:
+            hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+            pfw_logdir = hydra_cfg['runtime']['output_dir']            
+
+        PerfTrace.initialize_log(pfw_logdir, os.path.abspath(data_folder))
+
         with utils.ProfilerSection("initialization", profile=self._config["profile"]):
+            super().init_ddp()
+
             utils.logger.event(key=utils.logger.constants.CACHE_CLEAR)
             utils.logger.start(key=utils.logger.constants.INIT_START)
 
-            number_of_nodes = self._distenv.size / self._distenv.local_size
-
-            utils.logger.event(key=utils.logger.constants.SUBMISSION_BENCHMARK,
-                               value="cosmoflow")
-            utils.logger.event(key=utils.logger.constants.SUBMISSION_ORG,
-                               value="NVIDIA")
-            utils.logger.event(key=utils.logger.constants.SUBMISSION_DIVISION,
-                               value="closed")
-            utils.logger.event(key=utils.logger.constants.SUBMISSION_STATUS,
-                               value="onprem")
-            utils.logger.event(key=utils.logger.constants.SUBMISSION_PLATFORM,
-                               value=f"{number_of_nodes}xNVIDIA DGX A100")
+            num_nodes = int(os.getenv("DGXNNODES", self._distenv.size // self._distenv.local_size))
+            utils.logger.mllogger.mlperf_submission_log(
+                benchmark="cosmoflow", num_nodes=num_nodes)
 
             utils.logger.event(key="number_of_nodes",
                                value=self._distenv.size // self._distenv.local_size)
@@ -90,6 +82,7 @@ class CosmoflowMain(PytorchApplication):
                 if not self._distenv.is_single:
                     seed = self._distenv.master_mpi_comm.bcast(
                         seed, root=0) + self._distenv.instance
+            utils.logger.event(key=utils.logger.constants.SEED, value=seed)
 
             assert (train_cfg["weight_decay"] == 0.0 or train_cfg["dropout_rate"] ==
                     0.0), "Both 'weight_decay' and 'dropout_rate' cannot be different from 0"
@@ -113,7 +106,6 @@ class CosmoflowMain(PytorchApplication):
                                                                                                 distenv=self._distenv,
                                                                                                 device=self._distenv.local_rank,
                                                                                                 seed=seed)
-            super().init_ddp()
 
             model_layout = Convolution3DLayout(model_cfg["layout"])
             self._model = get_standard_cosmoflow_model(kernel_size=model_cfg["conv_layer_kernel"],
@@ -153,49 +145,83 @@ class CosmoflowMain(PytorchApplication):
 
             self._stager_executor = get_executor_from_config(
                 self._distenv, self._config)
-            self._distenv.global_barrier()
-            utils.logger.stop(key=utils.logger.constants.INIT_STOP)
+
+            self._run_stop_printed = False
+
+    def stop_training(self, status: str, epoch_num: int, time: int):
+        utils.logger.mllogger.log_run_stop(status=status,
+                                           time=time,
+                                           epoch_num=epoch_num)
+        with torch.no_grad():
+            for group in self._optimizer.param_groups:
+                if isinstance(group["lr"], torch.Tensor):
+                    group["lr"].fill_(0.0)
+                else:
+                    group["lr"] = 0.0
+
+        for lmbd in self._lr_scheduler.lr_lambdas:
+            lmbd.disable()
+
+        self._run_stop_printed = True
 
     def run(self) -> Any:
         model_cfg = self._config["model"]
         eval_only = "eval_only" in self._config
 
-        utils.logger.start(key=utils.logger.constants.RUN_START)
-        with utils.ExecutionTimer(name="run_time", profile=self._config["profile"]) as run_time:
-            utils.logger.start(key="staging_start")
-            with utils.ExecutionTimer(name="data_staging",
-                                      profile=self._config["profile"]) as staging_timer:
-                if self._config['data']['stage']!=False:
-                    with self._stager_executor:
-                        wait_train = self._training_pipeline.stage_data(self._stager_executor,
-                                                                        profile=self._config["profile"])
-                        wait_eval = self._validation_pipeline.stage_data(self._stager_executor,
-                                                                         profile=self._config["profile"])
-                        wait_train()
-                        wait_eval()
-                self._distenv.local_barrier()
-            utils.logger.stop(key="staging_stop",
-                              metadata={"staging_duration": staging_timer.time_elapsed()})
+        utils.logger.start(key="staging_start")
+        with utils.ExecutionTimer(name="data_staging",
+                                  profile=self._config["profile"]) as staging_timer:
+            with self._stager_executor:
+                wait_train = self._training_pipeline.stage_data(self._stager_executor,
+                                                                profile=self._config["profile"])
+                wait_eval = self._validation_pipeline.stage_data(self._stager_executor,
+                                                                profile=self._config["profile"])
 
+                if wait_train is not None:
+                    wait_train()
+                if wait_eval is not None:
+                    wait_eval()
+            self._distenv.local_barrier()
+        utils.logger.stop(key="staging_stop",
+                          metadata={"staging_duration": staging_timer.time_elapsed()})
+
+
+        self._distenv.global_barrier()
+        utils.logger.mllogger.log_init_stop_run_start()
+
+        run_status = None
+        with utils.ExecutionTimer(name="run_time", profile=self._config["profile"]) as run_time:
             train_iterator = iter(self._training_pipeline)
             val_iterator = iter(self._validation_pipeline)
 
-            for epoch in range(model_cfg["training"]["train_epochs"]):
+            for epoch in range(model_cfg["training"]["train_epochs"] * 10):
                 last_score = self._trainer.epoch_step(
                     train_iterator, val_iterator, epoch, eval_only=eval_only)
 
                 if last_score <= model_cfg["training"]["target_score"]:
                     run_status = "success"
+                    
+                    if ("early_stop" in model_cfg["training"] and
+                        model_cfg["training"]["early_stop"]):
+                        break
+                    elif not self._run_stop_printed:
+                        self.stop_training(run_status, epoch+1, run_time.time_elapsed())
+
+                # Run for at least 13 minutes and train_epochs are reach
+                if run_time.time_elapsed() > 11 * 60 and (
+                    run_status is not None or epoch > model_cfg["training"]["train_epochs"]):
                     break
-            else:
+            
+            if run_status is None:
                 run_status = "aborted"
 
             torch.cuda.synchronize()
         self._distenv.local_barrier()
-        utils.logger.stop(key=utils.logger.constants.RUN_STOP,
-                          metadata={"status": run_status,
-                                    "time": run_time.time_elapsed(),
-                                    "epoch_num": epoch+1})
+
+        if not self._run_stop_printed:
+            utils.logger.mllogger.log_run_stop(status=run_status,
+                                               time=run_time.time_elapsed(),
+                                               epoch_num=epoch+1)
         self._distenv.global_barrier()
 
 
@@ -203,10 +229,7 @@ class CosmoflowMain(PytorchApplication):
             config_name="baseline",
             version_base=None)
 def main(cfg: OmegaConf) -> Any:
-
-    result=CosmoflowMain(cfg).exec()
-    return result
-
+    return CosmoflowMain(cfg).exec()
 
 
 if __name__ == "__main__":

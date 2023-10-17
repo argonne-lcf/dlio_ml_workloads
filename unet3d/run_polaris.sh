@@ -12,7 +12,7 @@ free -h
 SEED=${1:--1}
 
 #MAX_EPOCHS=4000
-MAX_EPOCHS=4
+MAX_EPOCHS=${EPOCHS:-4}
 QUALITY_THRESHOLD="0.908"
 START_EVAL_AT=2
 EVALUATE_EVERY=8
@@ -54,7 +54,7 @@ then
 from mlperf_logging.mllog import constants
 from runtime.logging import mllog_event
 mllog_event(key=constants.CACHE_CLEAR, value=True)"
-
+#export LD_PRELOAD=$HOME//PolarisAT/pyenvs/ml_workload/lib/libdlio_profiler_preload.so
 aprun --cc depth -n ${NPROC} -N ${PPN} -d $((64/PPN)) -e OMP_NUM_THREADS=$((64/PPN)) ./local_rank.sh python3 main.py --data_dir ${DATASET_DIR} \
     --epochs ${MAX_EPOCHS} \
     --evaluate_every ${EVALUATE_EVERY} \

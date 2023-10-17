@@ -43,6 +43,24 @@ class NPyLegacyDataPipeline(InputPipelineCore):
             config["stage"], mode) if config["stage"] != False else self._file_root_path
 
         self._shuffle = config["shuffle"] and mode == "train"
+        if hasattr(config, "io_device"):
+            self._io_device = config["io_device"]
+        else:
+            self._io_device = "cpu"
+        if self._io_device not in ["cpu", "gpu"]:
+            raise NotImplementedError(f"Invalid io_device: {self._io_device}. "
+                                      f"Valid options are: 'cpu', 'gpu'")
+        if hasattr(config, "disable_mmap"):
+            self._disable_mmap = config["disable_mmap"]
+        else:
+            self._disable_mmap = False
+
+        if "use_direct_io" not in config:
+            self._use_direct_io = True
+            self._disable_mmap = True
+        else:
+            self._use_direct_io = config["use_direct_io"]
+            self._disable_mmap = self._use_direct_io
         self._seed = seed if seed else random.randint(0, 65536)
         self._mode = mode
 
@@ -53,8 +71,11 @@ class NPyLegacyDataPipeline(InputPipelineCore):
     def get_inputs(self, pipeline, **kwargs):
         sample_size_data = np.prod(self._config["sample_shape"])
         sample_size_label = np.prod(self._config["target_shape"])
-        numpy_reader = dali_fn.readers.numpy(bytes_per_sample_hint=sample_size_data * 2,
-                                             dont_use_mmap=False,
+        numpy_reader = dali_fn.readers.numpy(device=self._io_device,
+                                             bytes_per_sample_hint=sample_size_data * 2,
+                                             dont_use_mmap=(self._disable_mmap
+                                                            or (self._io_device=="gpu")),
+                                             cache_header_information=True,
                                              file_root=str(
                                                  self._file_staged_path),
                                              files=self._file_list_data,
@@ -64,8 +85,11 @@ class NPyLegacyDataPipeline(InputPipelineCore):
                                              shuffle_after_epoch=self._shuffle,
                                              name="data_reader",
                                              seed=self._seed)
-        label_reader = dali_fn.readers.numpy(bytes_per_sample_hint=sample_size_label * 4,
-                                             dont_use_mmap=False,
+        # always run the labels un the CPU
+        label_reader = dali_fn.readers.numpy(device="cpu",
+                                             bytes_per_sample_hint=sample_size_label * 4,
+                                             dont_use_mmap=self._disable_mmap,
+                                             cache_header_information=True,
                                              file_root=str(
                                                  self._file_staged_path),
                                              files=self._file_list_label,
@@ -132,7 +156,7 @@ class NPyLegacyDataPipeline(InputPipelineCore):
     def stage_data(self, executor: AbstractStagerExecutor, *, profile: bool = False):
         if self._config["stage"] == False or self._config["shard_type"] != "local":
             return
-
+        print(self._file_list_label[self._distenv.local_rank::self._distenv.local_size])        
         os.makedirs(self._file_staged_path, exist_ok=True)
         future = executor.stage_files(self._file_list_data[self._distenv.local_rank::self._distenv.local_size],
                                       self._file_list_label[self._distenv.local_rank::self._distenv.local_size],

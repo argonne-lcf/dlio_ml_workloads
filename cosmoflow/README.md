@@ -102,7 +102,7 @@ export CONFIG_FILE=submission_dgxa100_4x8x1
 sbatch <specify system-dependent additional args here> -N ${DGXNNODES} -t ${WALLTIME} run.sub +instances=128
 ```
 
-You can modify total number of parallel instances using `INSTANCES` environmental variable.
+You can modify total number of parallel instances using `NUM_INSTANCES` environmental variable.
 
 ## Hyperparameters
 

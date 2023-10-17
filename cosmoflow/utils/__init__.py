@@ -14,10 +14,10 @@
 from .utils import *
 
 
-def setup_logger(folder: str, distenv: DistributedEnv,
+def setup_logger(distenv: DistributedEnv,
                  timestamp: str, experiment_id: str):
     global logger
-    logger = Logger(folder, distenv, timestamp, experiment_id)
+    logger = Logger(distenv, timestamp, experiment_id)
 
 
 logger: Optional[Logger] = None

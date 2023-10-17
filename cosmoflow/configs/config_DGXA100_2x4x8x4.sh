@@ -2,7 +2,7 @@ source $(dirname ${BASH_SOURCE[0]})/config_DGXA100_common.sh
 
 export STAGING_DIR="/raid/scratch"
 export CONFIG_FILE="submission_dgxa100_4x8x4.yaml"
-export INSTANCES=2
+export NUM_INSTANCES=2
 
 ## System run parms
 export DGXNNODES=8

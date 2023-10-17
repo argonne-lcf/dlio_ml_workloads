@@ -12,24 +12,24 @@ model:
     dropout_rate: 0.5
     weight_decay: 0
 
-    optimizer: "fixed_sgd"
-
     momentum: 0.9
     amp: True
 
+    optimizer: "fixed_sgd"
+
     lr_sched:
-      lr: 0.008
+      lr: 0.004
       init_lr: 0.001
-      warmup_epochs: 4
+      warmup_epochs: 1
 
-      decay_steps: [32, 64]
-      decay_values: [0.25, 0.125]
+      decay_steps: [3, 4, 5]
+      decay_values: [0.25, 0.125, 0.0625]
 
-    train_epochs: 50
+    train_epochs: 16
 
 data:
   batch_size: 1
-  dataset: "cosmoflow_tfr"
+  dataset: "cosmoflow_npy"
 
   apply_log: True
   shuffle: True
@@ -37,16 +37,18 @@ data:
   shard_type: "local"
   shard_multiplier: 1
 
-  root_dir: "/home/hzheng/datascience_grand/mlperf_hpc/hpc-nvidia/datasets/cosmoflow/cosmoUniverse_2019_05_4parE_tf_v2/"
-  stage: "/staging_area"
-  stage_mode: "thread"
+  root_dir: "/dataset"
+  stage: False
+  stage_mode: "sequential"
   stage_workers: 32
 
   sample_shape: [128, 128, 128, 4]
   target_shape: [4]
 
-  dali_threads: 16
+  dali_threads: 4
   data_layout: "NDHWC"
+
+  io_device: "gpu"
 
 profile: False
 

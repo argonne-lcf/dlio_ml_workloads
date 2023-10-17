@@ -22,24 +22,27 @@ import nvidia.dali.types as dali_types
 import nvidia.dali.plugin.pytorch as dali_pytorch
 
 from utils import DistributedEnv
-from pfw_utils.utility import Profile
+
 import torch
 
 from typing import Tuple
+#For DLIO profiler
+from pfw_utils.utility import Profile
 dlp_dali=Profile("DALI")
-
 class InputPipelineCore(object):
     def __init__(self,
                  data_cfg: DictConfig,
                  distenv: DistributedEnv,
                  sample_count: int,
                  device: int,
-                 build_now: bool = True):
+                 build_now: bool = True,
+                 threads: int = None):
         self._config = data_cfg
         self._distenv = distenv
 
         self._sample_count = sample_count
         self._device = device
+        self._threads = threads if threads else self._config["dali_threads"]
 
         if build_now:
             self._build()
@@ -69,7 +72,7 @@ class InputPipelineCore(object):
 
             def __iter__(self):
                 return self
-
+            @dlp_dali.log
             def __next__(self) -> Tuple[torch.Tensor, torch.Tensor]:
                 if self._buffer == None or self._count >= self._batch_size:
                     self._count = 0
@@ -82,12 +85,11 @@ class InputPipelineCore(object):
 
         return InputMultiplierIter(self._pipeline,
                                    self._sample_count,
-                                   self._config["dali_threads"])
+                                   self._threads)
 
     def _build_pipeline(self, **kwargs):
-        pipeline = Pipeline(batch_size=self._config["dali_threads"],
-                            num_threads=self._config["dali_threads"],
-                            py_num_workers=self._config['dali_threads'], 
+        pipeline = Pipeline(batch_size=self._threads,
+                            num_threads=self._threads,
                             device_id=self._device,
                             prefetch_queue_depth={"cpu_size": 4, "gpu_size": 2})
         with pipeline:
@@ -115,4 +117,6 @@ class InputPipelineCore(object):
         pass
 
     def stage_data(self, executor=None, profile: bool = False):
-        pass
+        def no_wait():
+            pass
+        return no_wait

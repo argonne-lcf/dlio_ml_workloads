@@ -18,11 +18,11 @@ model:
     amp: True
 
     lr_sched:
-      lr: 0.012
+      lr: 0.024
       init_lr: 0.006
       warmup_epochs: 6
 
-      decay_steps: [19, 21, 22, 23]
+      decay_steps: [20, 22, 23, 24]
       decay_values: [0.5, 0.25, 0.125, 0.0625]
 
     train_epochs: 30
@@ -36,6 +36,7 @@ data:
   preshuffle: True
   shard_type: "local"
   shard_multiplier: 1
+  use_direct_io: False
 
   root_dir: "/dataset"
   stage: "/staging_area"

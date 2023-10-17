@@ -2,6 +2,8 @@
 module load conda
 export RDMAV_HUGEPAGES_SAFE=1
 export IBV_FORK_SAFE=1
+export DLIO_PROFILER_ENABLE=1
+export DLIO_PROFILER_INC_METADATA=1
 export WORKDIR=/home/hzheng/PolarisAT/dlio_ml_workloads/
 if [ -v PBS_NODEFILE ]; then
     export PBS_JOBSIZE=$(cat $PBS_NODEFILE | sort | uniq | sed -n $=)

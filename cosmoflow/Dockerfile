@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG FROM_IMAGE_NAME=nvcr.io/nvidia/pytorch:22.08-py3
+ARG FROM_IMAGE_NAME=nvcr.io/nvdlfwea/pytorch:23.09-py3
 
 FROM ${FROM_IMAGE_NAME} as build
 
@@ -39,14 +39,14 @@ RUN apt-get update \
        && apt-get install -y --no-install-recommends \
        infiniband-diags \
        pciutils \
-       libboost-python1.71 libboost-numpy1.71 libboost-iostreams1.71 libaio1 \
+       libboost-python-dev libboost-numpy-dev libboost-iostreams-dev libaio-dev \
        && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 WORKDIR /workspace/cosmoflow
 
 COPY requirements.txt .
-RUN pip install "git+https://github.com/mlcommons/logging.git@8d6320f8aef76a84fd5f309e6814684d77abb328" \
+RUN pip install "git+https://github.com/mlcommons/logging.git@hpc-3.0.0" \
        && pip install --no-cache-dir -r requirements.txt
 
 # Copy Cosmoflow code

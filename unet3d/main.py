@@ -37,7 +37,8 @@ def main():
     mllog.config(filename=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'unet3d.log'))
     flags = PARSER.parse_args()
     os.makedirs(flags.output_dir, exist_ok=True)
-    PerfTrace.initialize_log(flags.output_dir, os.path.abspath(flags.data_dir))
+    flags.data_dir = os.path.abspath(flags.data_dir)
+    PerfTrace.initialize_log(flags.output_dir, flags.data_dir)
     mllog.config(filename=os.path.join(flags.output_dir, 'unet3d.log'))
     mllogger = mllog.get_mllogger()
     mllogger.logger.propagate = False
