@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #PBS -l walltime=00:30:00
-#PBS -l select=4:system=polaris
+#PBS -l nodes=4:ppn=4
 #PBS -q preemptable
 #PBS -A datascience
 #PBS -l filesystems=home:grand
@@ -8,7 +8,6 @@
 cd $PBS_O_WORKDIR
 
 #source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_ml_env.sh
-
 source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_deepcam_env.sh  
 
 #module load singularity
@@ -17,10 +16,10 @@ NODES=$(cat $PBS_NODEFILE | uniq | wc -l)
 GPUS_PER_NODE=4
 RANKS=$((NODES * GPUS_PER_NODE))
 echo NODES=$NODES  PPN=$GPUS_PER_NODE  RANKS=$RANKS
-
-unset PYTHONPATH
+export PYTHONPATH=/home/hzheng/PolarisAT/dlio_ml_workloads:$PYTHONPATH
 export APPDIR=$PWD
-export OUTPUT_DIR=$PWD/results
+export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
+export OUTPUT_DIR=$PWD/results/${NODES}x${GPUS_PER_NODE}/$TAG/
 
 # Enable GPU-MPI (if supported by application)
 export MPICH_GPU_SUPPORT_ENABLED=1
@@ -48,6 +47,7 @@ unset TRAINING_INSTANCE_SIZE
 
 ###### source config file
 source $APPDIR/configs/config_polaris_128x4x2.sh
+export DGXNGPU=${GPUS_PER_NODE}
 
 # start timing
 start=$(date +%s)
@@ -90,7 +90,6 @@ PARAMS=(
     --logging_frequency ${LOGGING_FREQUENCY}
     --save_frequency 100000
     --max_epochs ${MAX_EPOCHS:-200}
-    --max_inter_threads ${MAX_THREADS:-4}
     --seed ${SEED}
     --batchnorm_group_size ${BATCHNORM_GROUP_SIZE}
     --shuffle_mode "${SHUFFLE_MODE}"
@@ -237,7 +236,6 @@ RUN_CMD="${RUN_SCRIPT} ${PARAMS[@]}"
 # ${BIND_CMD} ${PROFILE_CMD} ${DEBUG_CMD} 
 
 aprun -n ${NTOTRANKS} -N ${NRANKS_PER_NODE} --cc depth -d 16 $(which python) ${RUN_CMD}; ret_code=$? 
-
 #if [[ $ret_code != 0 ]]; then exit $ret_code; fi
 
 # cleanup command

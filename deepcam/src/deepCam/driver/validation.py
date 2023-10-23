@@ -34,6 +34,7 @@ import torch.distributed as dist
 
 # logging stuff
 from mlperf_logging import mllog
+from pfw_utils.utility import Profile, PerfTrace
 
 # custom stuff
 from utils import metric

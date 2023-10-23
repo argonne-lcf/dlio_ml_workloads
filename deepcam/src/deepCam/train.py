@@ -68,7 +68,7 @@ from utils import comm
 # custom logging
 from utils.profile_logger import PLogger
 from pfw_utils.utility import Profile, PerfTrace
-dlp = Profile("DeepCam")
+dlp = Profile("train")
 #main function
 def main(pargs):
 

@@ -14,7 +14,10 @@ if [[ -e $ML_ENV ]]; then
 else
     conda create  -p $ML_ENV --clone  /soft/datascience/conda/2023-10-04/mconda3/
     conda activate $ML_ENV
-    pip install git+https://github.com/hariharan-devarajan/dlio-profiler.git
+    git clone https://github.com/hariharan-devarajan/dlio-profiler
+    cd dlio-profiler
+    python setup install
+    cd -
     export PYTHONPATH=$WORKDIR/:$PYTHONPATH
     #install apex
     git clone https://github.com/NVIDIA/apex

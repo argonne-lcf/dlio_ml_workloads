@@ -110,7 +110,7 @@ def get_local_size():
         local_size = min([local_size, get_world_size()])
     else:
         local_size = 1
-
+    print("LOCAL SIZE", local_size)
     return local_size
 
 
@@ -271,15 +271,25 @@ def init(method, batchnorm_group_size=1, batchnorm_group_stride=1):
     global _DATA_PARALLEL_ROOT
     
     if method == "nccl-openmpi":
-        addrport = os.getenv("PMIX_SERVER_URI2").split("//")[1]
+        #addrport = os.getenv("PMIX_SERVER_URI2").split("//")[1]
         #use that URI
-        address = addrport.split(":")[0]
+        #address = addrport.split(":")[0]
+        import socket
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        if comm.rank == 0:
+            master_addr = socket.gethostname()
+        else:
+            master_addr = None
+        master_addr = MPI.COMM_WORLD.bcast(master_addr, root=0)
         #use the default pytorch port
         port = "29500"
-        os.environ["MASTER_ADDR"] = address
+        os.environ["MASTER_ADDR"] = master_addr
         os.environ["MASTER_PORT"] = port
-        rank = int(os.getenv('OMPI_COMM_WORLD_RANK',0))
-        world_size = int(os.getenv("OMPI_COMM_WORLD_SIZE",0))
+        rank = comm.rank
+        #rank = int(os.getenv('OMPI_COMM_WORLD_RANK',0))
+        world_size = comm.size
+        #world_size = int(os.getenv("OMPI_COMM_WORLD_SIZE",0))
         
         #init DDP
         dist.init_process_group(backend = "nccl",

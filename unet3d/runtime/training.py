@@ -88,9 +88,13 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
         t0 = time.time()
         for iteration, batch in dlp_train.iter(enumerate(tqdm(train_loader, disable=(rank != 0) or not flags.verbose))):
             image, label = batch
+            t0 = time.time()
+            tt0 = time.time()
             with Profile(cat="train", name="H2D"):
                 image, label = image.to(device), label.to(device)
             t1 = time.time()
+            if (rank==0):
+                print(" H2D time [%d]: %10.5f" %(iteration, t1 - t0))
             t0 = time.time()
             with Profile(cat="train", name="compute-forward"):
                 for callback in callbacks:
@@ -130,6 +134,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
             t1 = time.time()
             if (rank==0):
                 print(" training time [%d]: %10.8f (s)     %10.8f (ms)" %(iteration, t1 - t0, t0*1000))
+                print(" step time [%d]: %10.8f (s)     %10.8f (ms)" %(iteration, t1 - tt0, t0*1000))
             t0 = time.time()
 
         mllog_end(key=CONSTANTS.EPOCH_STOP, sync=False,
@@ -144,9 +149,9 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
 
             eval_metrics = evaluate(flags, model, val_loader, loss_fn, score_fn, device, epoch)
             if (skip_reduce):
-                eval_metrics["train_loss"] = sum(cumulative_loss) / len(cumulative_loss)
-            else:
                 eval_metrics["train_loss"] = 0.15
+            else:
+                eval_metrics["train_loss"] = sum(cumulative_loss) / len(cumulative_loss)                
 
             mllog_event(key=CONSTANTS.EVAL_ACCURACY,
                         value=eval_metrics["mean_dice"],

@@ -508,7 +508,7 @@ class CamDaliESDataloader(object):
     @dlp.log
     def __iter__(self):
         #self.iterator.reset()
-        with Profile("IO", cat="DataLoader"):
+        with Profile(name="IO", cat="DataLoader"):
             for token in self.iterator:
                 data = token[0]['data']
                 label = token[0]['label']

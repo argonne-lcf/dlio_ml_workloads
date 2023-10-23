@@ -254,7 +254,6 @@ class Trainer(object):
             ##self.criterion = torch.jit.script(self.criterion)
             #self.criterion = torch.compile(self.criterion, mode="max-autotune")
     
-    
     def _warmup(self, input_shape, label_shape, warmup_stream = None, num_warmup = 20):
 
         # set model to train just to be sure
@@ -449,7 +448,6 @@ class Trainer(object):
 
         return
         
-    @dlp.log
     def step(self, inputs, label, disable_scheduler=False):
         
         # set model to train to be sure
@@ -560,12 +558,12 @@ def train_epoch(pargs, comm_rank, comm_size,
         
         if not trainer.enable_dali:
             # send to device
-            with Profile("H2D", cat="Trainer"):
+            with Profile(name="H2D", cat="Trainer"):
                 inputs = inputs.to(trainer.device)
                 label = label.to(trainer.device)
-            
-        loss, outputs, current_lr = trainer.step(inputs, label, disable_scheduler=disable_scheduler)
-    
+        with Profile(name="trainer.step", cat="Trainer") as dlp_step:
+            loss, outputs, current_lr = trainer.step(inputs, label, disable_scheduler=disable_scheduler)
+            dlp_step.update(step=step)
         # step counter
         step += 1
         steps_in_epoch += 1
