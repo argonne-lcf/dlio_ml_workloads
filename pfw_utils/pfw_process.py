@@ -1,27 +1,41 @@
 #!/usr/bin/env python
-from perfetto.trace_processor import TraceProcessor, TraceProcessorConfig
+
 import sys, os, argparse
-config=TraceProcessorConfig(verbose=True)
+import pandas as pd
+import json
+def pfw_to_json(fpfw, fjson):
+    with open(fpfw, "r") as fin:
+        f = fin.read()
+        if f[0]!="[":
+            f = "[" + f
+        f=f.replace("}}", "}},")
+        n=-1
+        while f[n]!=",":
+            n=n-1
+        with open(fjson, "w") as fout:
+            fout.write(f[:n]+"]")    
 def main():
     parser = argparse.ArgumentParser(prog="pfw_process")
     parser.add_argument("--input", '-i', help='Input trace file')
     parser.add_argument("--name", '-n', help="The name of the field for process")
     parser.add_argument("--attr", '-a', default="dur", help="The attribute to show")
     parser.add_argument("--operation", '-o', help='operations to perform', default="print")
+    parser.add_argument("--skip_head", action='store_true')
     args = parser.parse_args()
     print(f"Reading tracing information from {args.input}")
-    tp = TraceProcessor(trace=args.input, config=config)
-    qr_it = tp.query(f"SELECT name, {args.attr} FROM slice")
-    qr_df = qr_it.as_pandas_dataframe()
-    qr_df = qr_df[qr_it["name"]==args.name]
-    if (args.op == "print"):
-        print(qr_df.to_string())
-    elif (args.op == "sum"):
-        print(qr_df.sum())
-    elif (args.op == "average"):
-        print(qr_df.sum())
+    pfw_to_json(args.input, "/tmp/tmp.json")
+    with open("/tmp/tmp.json", "r") as fin:
+        js = json.loads(fin.read())
+    qr_df = pd.DataFrame(js)
+    if (args.name is not None):
+        qr_df = qr_df[qr_df["name"]==args.name]
+    if (args.operation == "print"):
+        print(qr_df[args.attr].to_string())
+    elif (args.operation == "sum"):
+        print(f"Sum of {args.attr} with name == {args.name}:", qr_df[args.attr].astype(float).sum())
+    elif (args.operation == "average"):
+        print(f"Average of {args.attr} with name == {args.name}:", qr_df[args.attr].astype(float).mean())
     else:
         raise Exception("Unknown operations")
-
 if __name__=="__main__":
     main()
