@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-from perfetto.trace_processor import TraceProcessor
-import sys, os
+from perfetto.trace_processor import TraceProcessor, TraceProcessorConfig
+import sys, os, argparse
+config=TraceProcessorConfig(verbose=True)
 def main():
     parser = argparse.ArgumentParser(prog="pfw_process")
     parser.add_argument("--input", '-i', help='Input trace file')
@@ -9,7 +10,7 @@ def main():
     parser.add_argument("--operation", '-o', help='operations to perform', default="print")
     args = parser.parse_args()
     print(f"Reading tracing information from {args.input}")
-    tp = TraceProcessor(trace=args.input)
+    tp = TraceProcessor(trace=args.input, config=config)
     qr_it = tp.query(f"SELECT name, {args.attr} FROM slice")
     qr_df = qr_it.as_pandas_dataframe()
     qr_df = qr_df[qr_it["name"]==args.name]

@@ -196,10 +196,13 @@ def main():
                 metavar='CK', help='checkpointing, -1 for disable')
     parser.add_argument("--output_folder", default='outputs', type=str)
     parser.add_argument("--profile", action='store_true', help="use pytorch profiler")
+    parser.add_argument("--shuffle", action='store_true', help="shuffle the dataset")
+    parser.add_argument("--custom_image_loader", action='store_true', help="use custom_image_folder")
     parser.add_argument("--num_workers", default=4, type=int)
+    parser.add_argument("--dont_pin_memory", action='store_true')
     args = parser.parse_args()
     os.makedirs(args.output_folder, exist_ok=True)
-
+    pin_memory = not args.dont_pin_memory
     # create logger with 'spam_application'
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -236,8 +239,7 @@ def main():
     val_kwargs = {'batch_size': args.test_batch_size}
     if use_cuda:
         cuda_kwargs = {'num_workers': args.num_workers,
-                       'pin_memory': True,
-                       'shuffle': False}
+                       'pin_memory': pin_memory}
         train_kwargs.update(cuda_kwargs)
         val_kwargs.update(cuda_kwargs)
 
@@ -252,26 +254,42 @@ def main():
         valdir = os.path.join(args.data, 'val')
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
-
-        train_dataset = MyImageFolder(
-            traindir,
-            transforms.Compose([
-                transforms.RandomResizedCrop(224),
-                transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                normalize,
-            ]))
-
-        val_dataset = MyImageFolder(
-            valdir,
-            transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                normalize,
-            ]))
+        if args.custom_image_loader:
+            train_dataset = MyImageFolder(
+                traindir,
+                transforms.Compose([
+                    transforms.RandomResizedCrop(224),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(),
+                    normalize,
+                ]))
+            val_dataset = MyImageFolder(
+                valdir,
+                transforms.Compose([
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    normalize,
+                ]))
+        else:
+            train_dataset = datasets.ImageFolder(
+                traindir,
+                transforms.Compose([
+                    transforms.RandomResizedCrop(224),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(),
+                    normalize,
+                ]))
+            val_dataset = datasets.ImageFolder(
+                valdir,
+                transforms.Compose([
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    normalize,
+                ]))
     train_sampler = torch.utils.data.distributed.DistributedSampler(
-        train_dataset, num_replicas=hvd.size(), rank=hvd.rank())
+        train_dataset, num_replicas=hvd.size(), rank=hvd.rank(), shuffle=args.shuffle)
     test_sampler = torch.utils.data.distributed.DistributedSampler(
         val_dataset, num_replicas=hvd.size(), rank=hvd.rank())
     train_loader = torch.utils.data.DataLoader(train_dataset, sampler= train_sampler, **train_kwargs)
@@ -297,12 +315,14 @@ def main():
     if args.profile:
         with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:    
             for epoch in range(1, args.epochs + 1):
+                train_sampler.set_epoch(epoch)
                 train(train_loader, model, criterion, optimizer, epoch, device, args)
                 # test(model, device, val_loader)
                 scheduler.step()
         prof.export_chrome_trace(f"{args.output_folder}/trace-{hvd.rank()}.json")
     else:
         for epoch in range(1, args.epochs + 1):
+            train_sampler.set_epoch(epoch)
             train(train_loader, model, criterion, optimizer, epoch, device, args)
             # test(model, device, val_loader)
             scheduler.step()

@@ -1,14 +1,15 @@
 #!/bin/bash -l
 #PBS -l walltime=00:30:00
 #PBS -l nodes=4:ppn=4
-#PBS -q preemptable
+#PBS -q debug-scaling
 #PBS -A datascience
+#PBS -N deepcam
 #PBS -l filesystems=home:grand
 
 cd $PBS_O_WORKDIR
 
 #source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_ml_env.sh
-source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_deepcam_env.sh  
+DATE_TAG=2023-10-04 source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_ml_env.sh  
 
 #module load singularity
 
@@ -99,6 +100,7 @@ PARAMS=(
     --enable_nhwc
     --local_batch_size ${LOCAL_BATCH_SIZE}
     --local_batch_size_validation ${LOCAL_VALIDATION_BATCH_SIZE}
+    --data_num_threads ${MAX_THREADS:-4}
     ${ADDITIONAL_ARGS}
 )
 

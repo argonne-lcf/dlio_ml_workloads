@@ -458,7 +458,7 @@ class CamDaliESDataloader(object):
         # read filenames first
         self.batchsize = batchsize
         self.num_threads = num_threads
-        self.num_es_threads = 2
+        self.num_es_threads = self.num_threads
         self.device = device
         self.io_device = "gpu" if read_gpu else "cpu"
         self.shuffle_mode = shuffle_mode

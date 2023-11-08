@@ -14,7 +14,7 @@ export SKIP_REDUCE=1
 
 PBS_JOBSIZE=$(cat $PBS_NODEFILE | uniq | sed -n $=)
 	 
-export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
+export TAG=$(date +"%Y-%m-%d-%H-%M-%S").$PBS_JOBID
 
 NUM_WORKERS=4
 PPN=1

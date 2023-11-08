@@ -28,3 +28,4 @@ export ADDITIONAL_ARGS="${ADDITIONAL_ARGS} --disable_comm_overlap --enable_graph
 export DGXNNODES=128
 WALLTIME_MINUTES=10
 export WALLTIME=$(( 15 + (${NEXP} * ${WALLTIME_MINUTES}) ))
+export MAX_THREADS=8

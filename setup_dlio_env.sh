@@ -1,15 +1,16 @@
 #!/bin/bash
-# modify this accordingly 
-export VENV_HOME=$HOME/PolarisAT/pyenvs/dlio
+# modify this accordingly
+DATE_TAG=2023-10-04
+export VENV_HOME=$HOME/PolarisAT/pyenvs/dlio/$DATE_TAG
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
 
 if [[ -e $VENV_HOME ]]; then
-    module load conda/2023-10-04
+    module load conda/$DATE_TAG
     source ${VENV_HOME}/bin/activate
 else
     mkdir -p $VENV_HOME
-    module load conda/2023-10-04
+    module load conda/$DATE_TAG
     conda activate
     python -m venv $VENV_HOME
     source $VENV_HOME/bin/activate
