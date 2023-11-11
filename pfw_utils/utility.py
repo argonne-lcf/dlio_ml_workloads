@@ -31,7 +31,7 @@ import psutil
 import socket
 import importlib.util
 # UTC timestamp format with microsecond precision
-from pfw_utils.enumerations import LoggerType
+from dlio_benchmark.common.enumerations import LoggerType
 
 LOG_TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 from mpi4py import MPI
@@ -182,15 +182,17 @@ class PerfTrace:
         instance.log_file = os.path.abspath(os.path.join(logdir, instance.logfile))
         if os.path.isfile(instance.log_file):
             os.remove(instance.log_file)
-        spec = importlib.util.find_spec('dlio_profiler_py')
+        spec = False            
+        if (os.getenv("DLIO_PROFILER_ENABLE")=="1") and importlib.util.find_spec('dlio_profiler_py'):
+            spec = True
         if spec:
+            logging.info(f"{utcnow()} Using DLIO Profiler")
             instance.logger_type = LoggerType.DLIO_PROFILER
             import dlio_profiler_py as dlio_logger
             instance.logger = dlio_logger
             instance.logger.initialize(instance.log_file, f"{data_dir}", process_id=get_rank())
-            with open(instance.log_file, "w") as fh:
-                fh.write("[")
         else:
+            logging.info(f"{utcnow()} Using Internal Profiler.")
             instance.logger = logging.getLogger("perftrace")
             instance.logger.setLevel(logging.DEBUG)
             instance.logger.propagate = False
@@ -199,7 +201,8 @@ class PerfTrace:
             formatter = logging.Formatter("%(message)s")
             fh.setFormatter(formatter)
             instance.logger.addHandler(fh)
-
+            instance.logger.debug("[")
+            
     def get_time(self):
         if self.logger_type == LoggerType.DLIO_PROFILER:
             return self.logger.get_time()
@@ -218,8 +221,6 @@ class PerfTrace:
     def finalize(self):
         if self.logger_type == LoggerType.DLIO_PROFILER:
             self.logger.finalize()
-            with open(self.log_file, "a+") as fh:
-                fh.write("]")
         else:
             self.logger.debug("]")
 
