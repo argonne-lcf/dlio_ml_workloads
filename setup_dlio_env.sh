@@ -1,10 +1,10 @@
 #!/bin/bash
 # modify this accordingly
 DATE_TAG=2023-10-04
-export VENV_HOME=$HOME/PolarisAT/pyenvs/dlio/$DATE_TAG
+export VENV_HOME=$HOME/PolarisAT_eagle/pyenvs/dlio/$DATE_TAG
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
-
+export LD_LIBRARY_PATH=$HOME/PolarisAT_eagle/pyenvs/hwloc/lib:$LD_LIBRARY_PATH
 if [[ -e $VENV_HOME ]]; then
     module load conda/$DATE_TAG
     source ${VENV_HOME}/bin/activate
@@ -25,7 +25,7 @@ else
     python setup.py install
     cd -
 fi
-
+export MPICH_GPU_SUPPORT_ENABLED=0
 # install 
 
 
