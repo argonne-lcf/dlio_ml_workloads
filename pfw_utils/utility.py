@@ -31,7 +31,7 @@ import psutil
 import socket
 import importlib.util
 # UTC timestamp format with microsecond precision
-from dlio_benchmark.common.enumerations import LoggerType
+from pfw_utils.enumerations import LoggerType
 
 LOG_TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 from mpi4py import MPI

@@ -16,7 +16,7 @@ def pfw_to_json(fpfw, fjson):
             fout.write(f[:n]+"]")    
 def main():
     parser = argparse.ArgumentParser(prog="pfw_process")
-    parser.add_argument("--input", '-i', help='Input trace file')
+    parser.add_argument("input", help='Input trace file')
     parser.add_argument("--name", '-n', help="The name of the field for process")
     parser.add_argument("--attr", '-a', default="dur", help="The attribute to show")
     parser.add_argument("--operation", '-o', help='operations to perform', default="print")
