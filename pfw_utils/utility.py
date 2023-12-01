@@ -33,6 +33,9 @@ import importlib.util
 # UTC timestamp format with microsecond precision
 from pfw_utils.enumerations import LoggerType
 
+from dlio_profiler.logger import fn_interceptor as Profile
+from dlio_profiler.logger import dlio_logger as PerfTrace
+
 LOG_TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 from mpi4py import MPI
 
@@ -156,7 +159,7 @@ def create_dur_event(name, cat, ts, dur, args={}):
     }
     return d
 
-
+'''
 class PerfTrace:
     __instance = None
     logger_type = LoggerType.DEFAULT
@@ -347,3 +350,4 @@ class Profile(object):
             else:
                 PerfTrace.get_instance().log_event(name=init.__qualname__, cat=self._cat, start_time=start, duration=end - start)
         return new_init
+'''
