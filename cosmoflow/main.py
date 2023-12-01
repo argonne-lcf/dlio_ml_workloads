@@ -55,7 +55,7 @@ class CosmoflowMain(PytorchApplication):
             hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
             pfw_logdir = hydra_cfg['runtime']['output_dir']            
 
-        PerfTrace.initialize_log(pfw_logdir, os.path.abspath(data_folder))
+        self.pfwlogger = PerfTrace.initialize_log(pfw_logdir, os.path.abspath(data_folder))
 
         with utils.ProfilerSection("initialization", profile=self._config["profile"]):
             super().init_ddp()
@@ -223,7 +223,7 @@ class CosmoflowMain(PytorchApplication):
                                                time=run_time.time_elapsed(),
                                                epoch_num=epoch+1)
         self._distenv.global_barrier()
-
+        self.pfwlogger.finalize()
 
 @hydra.main(config_path="configs",
             config_name="baseline",

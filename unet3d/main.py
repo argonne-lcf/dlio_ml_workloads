@@ -38,7 +38,7 @@ def main():
     flags = PARSER.parse_args()
     os.makedirs(flags.output_dir, exist_ok=True)
     flags.data_dir = os.path.abspath(flags.data_dir)
-    PerfTrace.initialize_log(flags.output_dir, os.path.abspath(flags.data_dir))
+    pfwlogger = PerfTrace.initialize_log(flags.output_dir, flags.data_dir)
     mllog.config(filename=os.path.join(flags.output_dir, 'unet3d.log'))
     mllogger = mllog.get_mllogger()
     mllogger.logger.propagate = False
@@ -93,7 +93,7 @@ def main():
     else:
         print("Invalid exec_mode.")
         pass
-
+    pfwlogger.finalize()
 
 if __name__ == '__main__':
     main()
