@@ -3,8 +3,8 @@
 #PBS -l walltime=1:00:00
 #PBS -q debug
 #PBS -A datascience
-#PBS -N resnet50
-#PBS -l filesystems=home:grand:eagle
+#PBS -N resnet50_tf
+#PBS -l filesystems=home:eagle
 
 cd $PBS_O_WORKDIR
 source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_ml_env.sh
