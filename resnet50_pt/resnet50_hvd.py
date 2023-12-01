@@ -219,7 +219,7 @@ def main():
     
     log.info("Horovod: I am worker %s of %s." %(hvd.rank(), hvd.size()))
     
-    PerfTrace.initialize_log(args.output_folder, os.path.abspath(args.data))    
+    pfwlogger = PerfTrace.initialize_log(args.output_folder, os.path.abspath(args.data))    
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     use_mps = not args.no_mps and torch.backends.mps.is_available()
 
@@ -333,7 +333,7 @@ def main():
             with Profile(name="checkpointing", cat='IO'):
             #with dlp_event_logging("IO", name="checkpointing") as compute:
                 torch.save(model.state_dict(), "resnet50.pt")
-    
+    pfwlogger.finalize()
     #test(model, device, val_loader)
     #log_inst.finalize()
 
