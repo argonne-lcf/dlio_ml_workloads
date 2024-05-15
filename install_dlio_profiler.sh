@@ -4,7 +4,7 @@ export CPATH=$HWLOC_PREFIX/include/:$CPATH
 export LIBRARY_PATH=$HWLOC_PREFIX/lib:$LIBRARY_PATH
 module load cmake
 pip uninstall dlio-profiler-py
-[ -e /tmp/dlio-profiler ] || git clone v0.0.3 https://github.com/hariharan-devarajan/dlio-profiler.git /tmp/dlio-profiler
+[ -e /tmp/dlio-profiler ] || git clone -b v0.0.3 https://github.com/hariharan-devarajan/dlio-profiler.git /tmp/dlio-profiler
 cd /tmp/dlio-profiler
 libpath=`which python`
 libpath=${libpath%/bin/python}/lib/
