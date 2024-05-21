@@ -23,7 +23,7 @@ EVALUATE_EVERY=8
 LEARNING_RATE="0.8"
 LR_WARMUP_EPOCHS=200
 DATASET_DIR="./data"
-BATCH_SIZE=${BATCH_SIZE:-2}
+BATCH_SIZE=${BATCH_SIZE:-7}
 GRADIENT_ACCUMULATION_STEPS=1
 NUM_WORKERS=${NUM_WORKERS:-4}
 SLEEP=${SLEEP:--1}
@@ -62,7 +62,7 @@ from mlperf_logging.mllog import constants
 from runtime.logging import mllog_event
 mllog_event(key=constants.CACHE_CLEAR, value=True)"
 export WORLD_SIZE=${NPROC}
-darshan_profile.sh mpirun -x PATH -x LD_LIBRARY_PATH --hostfile $COBALT_NODEFILE -np ${NPROC} -npernode ${PPN} ./local_rank.sh python main.py --data_dir ${DATASET_DIR} \
+mpirun -x PATH -x LD_LIBRARY_PATH --hostfile $COBALT_NODEFILE -np ${NPROC} -npernode ${PPN} ./local_rank.sh python main.py --data_dir ${DATASET_DIR} \
     --epochs ${MAX_EPOCHS} \
     --evaluate_every ${EVALUATE_EVERY} \
     --start_eval_at ${START_EVAL_AT} \

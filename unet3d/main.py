@@ -38,7 +38,7 @@ def main():
     flags = PARSER.parse_args()
     os.makedirs(flags.output_dir, exist_ok=True)
     flags.data_dir = os.path.abspath(flags.data_dir)
-    pfwlogger = PerfTrace.initialize_log(flags.output_dir, flags.data_dir)
+    pfwlogger = PerfTrace.initialize_log(f"{flags.output_dir}/trace-{comm.rank}-of-{comm.size}.pfw", flags.data_dir, process_id=comm.rank)
     mllog.config(filename=os.path.join(flags.output_dir, 'unet3d.log'))
     mllogger = mllog.get_mllogger()
     mllogger.logger.propagate = False

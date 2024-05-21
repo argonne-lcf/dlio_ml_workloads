@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+from mpi4py import MPI
 import argparse
 import os
 import numpy as np
