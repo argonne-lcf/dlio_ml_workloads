@@ -1,3 +1,4 @@
 git+https://github.com/NVIDIA/mlperf-common
 hydra-core
 mpi4py
+--extra-index-url https://pypi.nvidia.com nvidia-dali-cuda120

@@ -52,7 +52,7 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--data_folder', type=str, default="/eagle/datasets/ImageNet/tfrecords")                    
 parser.add_argument("--output_folder", default='outputs', type=str)
 parser.add_argument("--transfer_size", default=262144, type=int)
-parser.add_argument("--datagen", default='tfrecord', type=str)
+parser.add_argument("--datagen", default='synthetic', type=str)
 
 args = parser.parse_args()
 args.cuda = not args.no_cuda
@@ -220,11 +220,11 @@ with tf.device(device):
         step = 0
         for a, b in ds.take(args.steps):
             metric.start_step(step)
-            step += 1
             with Profile(name="compute", cat='train'):
                 benchmark_step(a, b, first_batch=False)
             metric.end_step(step)
             metric.end_loading(step)
+            step += 1
         metric.end_epoch(e)
         t = time.time() -t
         img_sec = args.batch_size * args.steps / t

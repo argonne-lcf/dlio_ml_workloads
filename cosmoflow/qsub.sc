@@ -1,11 +1,10 @@
 #!/bin/bash
 #PBS -S /bin/bash
 #PBS -l walltime=1:00:00
-#PBS -l nodes=1:ppn=4
+#PBS -l nodes=2:ppn=4
 #PBS -M huihuo.zheng@anl.gov
-#PBS -A datascience
-#PBS -q debug
-#PBS -l filesystems=home:grand
+#PBS -q S1948341 -A GPU_Hack
+#PBS -l filesystems=home:eagle
 cd $PBS_O_WORKDIR
 export NNODES=$(cat $PBS_NODEFILE | uniq | sed -n $=)
 
