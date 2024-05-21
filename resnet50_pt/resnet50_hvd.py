@@ -200,6 +200,8 @@ def main():
     parser.add_argument("--custom_image_loader", action='store_true', help="use custom_image_folder")
     parser.add_argument("--num_workers", default=4, type=int)
     parser.add_argument("--dont_pin_memory", action='store_true')
+    parser.add_argument("--multiprocessing_context", default=None, type=str)
+
     args = parser.parse_args()
     os.makedirs(args.output_folder, exist_ok=True)
     pin_memory = not args.dont_pin_memory
@@ -219,7 +221,7 @@ def main():
     
     log.info("Horovod: I am worker %s of %s." %(hvd.rank(), hvd.size()))
     
-    pfwlogger = PerfTrace.initialize_log(args.output_folder, os.path.abspath(args.data))    
+    pfwlogger = PerfTrace.initialize_log(args.output_folder+f"/trace-{hvd.rank()}-of-{hvd.size()}.pfw", os.path.abspath(args.data), process_id = hvd.rank())    
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     use_mps = not args.no_mps and torch.backends.mps.is_available()
 
@@ -242,6 +244,11 @@ def main():
                        'pin_memory': pin_memory}
         train_kwargs.update(cuda_kwargs)
         val_kwargs.update(cuda_kwargs)
+        
+    if args.multiprocessing_context is not None:
+        multi = {'multiprocessing_context': args.multiprocessing_context}
+        train_kwargs.update(multi)
+        val_kwargs.update(multi)
 
     # Data loading code
     if args.dummy:

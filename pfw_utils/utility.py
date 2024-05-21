@@ -41,6 +41,8 @@ from mpi4py import MPI
 
 p = psutil.Process()
 
+        
+
 def add_padding(n, num_digits=None):
     str_out = str(n)
     if num_digits!=None:
@@ -60,6 +62,47 @@ def get_rank():
 
 def get_size():
     return MPI.COMM_WORLD.size
+
+
+class Metric:
+    def __init__(self, epochs, steps, batch_size, logger=None):
+        self.epochs = epochs
+        self.steps = steps
+        self.AU = np.zeros(epochs)
+        self.compute_time = np.zeros(epochs)
+        self.epoch_time = np.zeros(epochs)
+        self.start_time = 0.0
+        self.logger == logger
+        self.current_epoch = 0
+        self.batch_size = batch_size
+    def start_epoch(self, epoch):
+        self.current_epoch = epoch
+        self.compute_time = 0.0
+        self.start_time_epoch = time.time()
+    def end_epoch(self, epoch):
+        self.end_time_epoch = time.time()
+        self.epoch_time[epoch] = self.end_time_epoch - self.start_time_epoch
+        self.AU[epoch] = self.compute_time[epoch]/self.epoch_time
+        if get_rank()==0:
+            self.logging(f"{utcnow()} Finished epoch {epoch}")
+            self.logging(f"[METRIC] AU[{epoch}]: {self.AU[epoch]*100}\%")
+            self.logging(f"[METRIC] Throughput (samples/second): {self.batch_size*self.steps*get_size()/self.epoch_time[epoch]}")
+    def start_step(self):
+        self.start_time = time.time()
+    def end_step(self):
+        self.compute_time[self.current_epoch] += time.time() - self.start_time
+        self.logging(f"{utcnow()} Rank {get_rank()} processed {batch_size} samples in {time.time() - self.start_time} seconds")
+    def logging(self, msg):
+        if self.logger is not None:
+            self.logger(msg)
+        else:
+            print(msg)
+    def __del__(self):
+        self.logging("============================================================")
+        self.logging(f"[METRIC] AU: {np.mean(self.AU)*100 (np.std(self.AU))*100}\%")
+        self.logging(f"[METRIC] Throughput: {self.batch_size*self.steps*get_size()*self.epochs/np.sum(self.epoch_time)}")
+
+
 
 
 def timeit(func):

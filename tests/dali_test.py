@@ -10,7 +10,7 @@ from pfw_utils.utility import Profile, PerfTrace
 # points to https://github.com/NVIDIA/DALI_extra
 #data_root_dir = os.environ['DALI_EXTRA_PATH']
 images_dir = "/eagle/datascience/ImageNet/ILSVRC/Data/CLS-LOC/"
-PerfTrace.initialize_log("./results", images_dir)
+PerfTrace.initialize_log("./results/trace.pfw", images_dir, process_id=0)
 
 def loss_func(pred, y):
     pass
