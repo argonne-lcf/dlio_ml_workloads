@@ -55,7 +55,7 @@ class CosmoflowMain(PytorchApplication):
             hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
             pfw_logdir = hydra_cfg['runtime']['output_dir']            
 
-        self.pfwlogger = PerfTrace.initialize_log(pfw_logdir, os.path.abspath(data_folder))
+        self.pfwlogger = PerfTrace.initialize_log(f"{pfw_logdir}/trace-{self._distenv.rank}-of-{self._distenv.size}.pfw", os.path.abspath(data_folder), process_id = self._distenv.rank)
 
         with utils.ProfilerSection("initialization", profile=self._config["profile"]):
             super().init_ddp()

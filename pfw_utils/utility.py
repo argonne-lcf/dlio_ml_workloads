@@ -65,6 +65,8 @@ def get_size():
 
 class Metric:
     def __init__(self, epochs, steps, batch_size, logger=None, num_steps_cut = 1):
+        if steps == -1:
+            steps = 10000
         self.num_steps_cut = num_steps_cut
         self.epochs = epochs
         self.steps = steps
@@ -77,9 +79,11 @@ class Metric:
         self.logger = logger
         self.current_epoch = 0
         self.batch_size = batch_size
+        self.step_count = 0
         if get_rank()==0:
             self.logging(f"Epochs: {epochs}; Steps: {steps}")
     def start_epoch(self, epoch):
+        self.step_count = 0
         self.current_epoch = epoch
         self.start_time_epoch = time()
     def start_loading(self, step):
@@ -88,15 +92,16 @@ class Metric:
         self.end_time_loading = time()
         self.loading_time[self.current_epoch][step] = self.end_time_loading - self.start_time_loading 
     def end_epoch(self, epoch):
+        self.steps = self.step_count
         self.end_time_epoch = time()
         self.epoch_time[epoch] = self.end_time_epoch - self.start_time_epoch
         total_time = self.epoch_time[epoch] \
             - np.sum(self.loading_time[epoch][:self.num_steps_cut]) \
             - np.sum(self.compute_time[epoch][:self.num_steps_cut]) \
-            - np.sum(self.loading_time[epoch][-self.num_steps_cut:]) \
-            - np.sum(self.compute_time[epoch][-self.num_steps_cut:])
-        compute_time = np.sum(self.compute_time[epoch][self.num_steps_cut:-self.num_steps_cut])
-        self.throughput[epoch] = self.batch_size*(self.steps-2*self.num_steps_cut)*get_size()/total_time
+            - np.sum(self.loading_time[epoch][self.step_count-self.num_steps_cut:self.step_count]) \
+            - np.sum(self.compute_time[epoch][self.step_count-self.num_steps_cut:self.step_count])
+        compute_time = np.sum(self.compute_time[epoch][self.num_steps_cut:self.step_count-self.num_steps_cut])
+        self.throughput[epoch] = self.batch_size*(self.step_count-2*self.num_steps_cut)*get_size()/total_time
         self.AU[epoch] = compute_time/total_time
         if get_rank()==0:
             self.logging(f"[{utcnow()}] Finished epoch {epoch}")
@@ -107,6 +112,7 @@ class Metric:
     def end_step(self, step=-1):
         self.compute_time[self.current_epoch][step] = time() - self.start_time
         self.logging(f"[{utcnow()}] Step {step} Rank {get_rank()} processed {self.batch_size} samples in {time() - self.start_time:.4f} seconds")
+        self.step_count += 1
     def logging(self, msg):
         if self.logger is not None:
             print(msg)
@@ -116,7 +122,7 @@ class Metric:
         if get_rank()==0:
             self.logging("============================================================")
             self.logging(f"[METRIC] AU (%): {np.mean(self.AU)*100:.4f} ({np.std(self.AU)*100:.4f})")
-            self.logging(f"[METRIC] Throughput (samples/second): {self.batch_size*self.steps*get_size()*self.epochs/np.sum(self.epoch_time):.4f}")
+            self.logging(f"[METRIC] Throughput (samples/second): {self.batch_size*self.step_count*get_size()*self.epochs/np.sum(self.epoch_time):.4f}")
             self.logging(f"[METRIC] Compute time per step (s): {np.mean(self.compute_time[:][1:]):.4f} ({np.std(self.compute_time[:][1:]):.4f})")
 
 def timeit(func):
