@@ -216,14 +216,17 @@ with tf.device(device):
     for e in range(args.epochs):
         t = time.time()
         metric.start_epoch(e)
+        metric.start_loading(0)
+        step = 0
         for a, b in ds.take(args.steps):
-            metric.start_step()
+            metric.start_step(step)
+            step += 1
             with Profile(name="compute", cat='train'):
                 benchmark_step(a, b, first_batch=False)
-            metric.end_step()
+            metric.end_step(step)
+            metric.end_loading(step)
         metric.end_epoch(e)
         t = time.time() -t
-        
         img_sec = args.batch_size * args.steps / t
         if hvd.rank()==0:
             log.info('Iter #%d: %.1f img/sec per %s' % (e, img_sec, device))
