@@ -162,7 +162,6 @@ class Metric:
             self.logging(f"AU (%): {np.mean(self.AU[:self.epochs])*100:.4f} ({np.std(self.AU[:self.epochs])*100:.4f})")
             self.logging(f"Throughput (samples/second): {np.mean(self.throughput[:self.epochs]):.4f} ({np.std(self.throughput[:self.epochs]):.4f})")
             self.logging(f"Compute time per step (s): {np.mean(self.summary['compute_time'][:][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f} ({np.std(self.summary['compute_time'][:][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f})")
-
             with open('summary.json', 'w') as outfile:
                 json.dump(self.summary, outfile, indent=4)
 def timeit(func):
