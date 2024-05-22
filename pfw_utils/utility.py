@@ -32,15 +32,39 @@ import socket
 import importlib.util
 # UTC timestamp format with microsecond precision
 from pfw_utils.enumerations import LoggerType
-from dlio_profiler.logger import fn_interceptor as Profile
-from dlio_profiler.logger import dlio_logger as PerfTrace    
+
+
+
+_DLIO_PROFILER_EXIST=True
+try:
+    import dlio_profiler
+except:
+    _DLIO_PROFILER_EXIST=False
+
+if _DLIO_PROFILER_EXIST:
+    from dlio_profiler.logger import fn_interceptor as Profile
+    from dlio_profiler.logger import dlio_logger as PerfTrace
+else:
+    from functools import wraps
+    class Profile:
+        def __init__(type="PROFILER"):
+            self.type = type
+        def log(self, func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                x = func(*args, **kwargs)
+                return x
+    class dlio_logger:
+        def __init__(self,):
+            self.type = None
+        def initialize_log(self, logfile=None, data_dir=None, process_id=-1):
+            pass
+    PerfTrace = dlio_logger()
 
 LOG_TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 from mpi4py import MPI
 
 p = psutil.Process()
-
-        
 
 def add_padding(n, num_digits=None):
     str_out = str(n)
@@ -48,8 +72,6 @@ def add_padding(n, num_digits=None):
         return str_out.rjust(num_digits, "0")
     else:
         return str_out
-
-
 
 def utcnow(format=LOG_TS_FORMAT):
     return datetime.now().strftime(format)
@@ -62,11 +84,11 @@ def get_rank():
 def get_size():
     return MPI.COMM_WORLD.size
 
-
+_ARRAY_MAX_DIM = 10000
 class Metric:
     def __init__(self, epochs, steps, batch_size, logger=None, num_steps_cut = 1):
         if steps == -1:
-            steps = 10000
+            steps = _ARRAY_MAX_DIM
         self.num_steps_cut = num_steps_cut
         self.epochs = epochs
         self.steps = steps
@@ -75,23 +97,28 @@ class Metric:
         self.compute_time = np.zeros((epochs, steps))
         self.loading_time = np.zeros((epochs, steps))
         self.epoch_time = np.zeros(epochs)
-        self.start_time = 0.0
         self.logger = logger
         self.current_epoch = 0
         self.batch_size = batch_size
         self.step_count = 0
-        if get_rank()==0:
-            self.logging(f"Epochs: {epochs}; Steps: {steps}")
+        self.epoch_started = False
+        self.step_started = False
+        self.loading_started = False
     def start_epoch(self, epoch):
+        self.epoch_started = True
         self.step_count = 0
         self.current_epoch = epoch
         self.start_time_epoch = time()
     def start_loading(self, step):
+        self.loading_started = True
         self.start_time_loading = time()
     def end_loading(self, step):
+        assert(self.loading_started)
         self.end_time_loading = time()
-        self.loading_time[self.current_epoch][step] = self.end_time_loading - self.start_time_loading 
+        self.loading_time[self.current_epoch][step] = self.end_time_loading - self.start_time_loading
+        self.loading_started = False
     def end_epoch(self, epoch):
+        assert(self.epoch_started)
         self.steps = self.step_count
         self.end_time_epoch = time()
         self.epoch_time[epoch] = self.end_time_epoch - self.start_time_epoch
@@ -105,25 +132,29 @@ class Metric:
         self.AU[epoch] = compute_time/total_time
         if get_rank()==0:
             self.logging(f"[{utcnow()}] Finished epoch {epoch}")
-            self.logging(f"[METRIC] AU[{epoch}] (%): {self.AU[epoch]*100:.4f}")
-            self.logging(f"[METRIC] Throughput (samples/second): {self.throughput[epoch]:.4f}")
+            self.logging(f"AU[{epoch}] (%): {self.AU[epoch]*100:.4f}")
+            self.logging(f"Throughput (samples/second): {self.throughput[epoch]:.4f}")
+        self.epoch_started = False
     def start_step(self, step=-1):
-        self.start_time = time()
+        self.step_started = True
+        self.start_time_step = time()
     def end_step(self, step=-1):
-        self.compute_time[self.current_epoch][step] = time() - self.start_time
-        self.logging(f"[{utcnow()}] Step {step} Rank {get_rank()} processed {self.batch_size} samples in {time() - self.start_time:.4f} seconds")
+        assert(self.step_started)
+        self.compute_time[self.current_epoch][step] = time() - self.start_time_step
+        self.logging(f"[{utcnow()}] Step {step} Rank {get_rank()} processed {self.batch_size} samples in {time() - self.start_time_step:.4f} seconds")
         self.step_count += 1
+        self.step_started = False
     def logging(self, msg):
         if self.logger is not None:
-            print(msg)
+            self.logger(msg)
         else:
-            print(msg)
+            print(f"[METRIC] {msg}")
     def __del__(self):
         if get_rank()==0:
             self.logging("============================================================")
-            self.logging(f"[METRIC] AU (%): {np.mean(self.AU)*100:.4f} ({np.std(self.AU)*100:.4f})")
-            self.logging(f"[METRIC] Throughput (samples/second): {self.batch_size*self.step_count*get_size()*self.epochs/np.sum(self.epoch_time):.4f}")
-            self.logging(f"[METRIC] Compute time per step (s): {np.mean(self.compute_time[:][1:]):.4f} ({np.std(self.compute_time[:][1:]):.4f})")
+            self.logging(f"AU (%): {np.mean(self.AU)*100:.4f} ({np.std(self.AU)*100:.4f})")
+            self.logging(f"Throughput (samples/second): {self.batch_size*self.step_count*get_size()*self.epochs/np.sum(self.epoch_time):.4f}")
+            self.logging(f"Compute time per step (s): {np.mean(self.compute_time[:][1:]):.4f} ({np.std(self.compute_time[:][1:]):.4f})")
 
 def timeit(func):
     @wraps(func)

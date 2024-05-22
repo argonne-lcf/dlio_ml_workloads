@@ -69,7 +69,7 @@ class Trainer(object):
         self.zeroing_stream = torch.cuda.Stream()
         self.prefetch_stream = torch.cuda.Stream()
         self.last_scale = None
-        steps = config['data']['train_samples']//config['data']['batch_size']//self._distenv.size
+        steps = -1
         self._metric = Metric(epochs = config['model']['training']['train_epochs'], \
                               steps = steps, \
                               batch_size=config['data']['batch_size'])
