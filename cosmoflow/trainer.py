@@ -70,9 +70,7 @@ class Trainer(object):
         self.prefetch_stream = torch.cuda.Stream()
         self.last_scale = None
         steps = -1
-        self._metric = Metric(epochs = config['model']['training']['train_epochs'], \
-                              steps = steps, \
-                              batch_size=config['data']['batch_size'])
+        self._metric = Metric(batch_size=config['data']['batch_size'])
         self._amp = amp
         if self._amp:
             self.scaler_ = torch.cuda.amp.GradScaler()
@@ -127,8 +125,6 @@ class Trainer(object):
                 should_run = False
 
             while should_run:
-                self._metric.end_loading(current_step)
-                self._metric.start_step(current_step)
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=True)):
                     utils.cudaProfilerStart()
@@ -138,20 +134,21 @@ class Trainer(object):
                         data = self._convert(input_data[0])
                         data = _convert_format(data)
                         label = input_data[1]
-
                 try:
                     with Profile(cat="IO", name="data_iter"):   
                         with torch.cuda.stream(self.prefetch_stream):
                             input_data = next(train_iter)
                 except StopIteration:
                     should_run = False
+                self._metric.end_loading(current_step)                    
+                self._metric.start_compute(current_step)                    
                 with Profile(cat="train", name="compute"):
                     self.train_step(data, label)
 
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=False)):
                     utils.cudaProfilerStop()
-                self._metric.end_step(current_step)   
+                self._metric.end_compute(current_step)   
                 self._metric.start_loading(current_step+1)             
                 current_step += 1
             self.lr_scheduler.step()

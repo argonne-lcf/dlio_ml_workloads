@@ -190,7 +190,7 @@ if hvd.rank()==0:
 import glob
 
 
-metric = Metric(args.epochs, args.steps, args.batch_size, logger = log.info)
+metric = Metric(args.batch_size, logger = log.info)
 
 #ds = tf.data.TFRecordDataset.list_files(file_names, shuffle=True)
 #ds = ds.apply(
@@ -216,17 +216,16 @@ with tf.device(device):
     for e in range(args.epochs):
         t = time.time()
         metric.start_epoch(e)
-
         metric.start_loading(0)
         step = 0
         for a, b in ds.take(args.steps):
             metric.end_loading(step)        
-            metric.start_step(step)
+            metric.start_compute(step)
             with Profile(name="compute", cat='train'):
                 benchmark_step(a, b, first_batch=False)
-            metric.end_step(step)
+            metric.end_compute(step)
             step += 1
-            metric.start_loading(0)            
+            metric.start_loading(step)            
         metric.end_epoch(e)
         t = time.time() -t
         img_sec = args.batch_size * args.steps / t

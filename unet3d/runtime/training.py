@@ -52,7 +52,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
     world_size = get_world_size()
     torch.backends.cudnn.benchmark = flags.cudnn_benchmark
     torch.backends.cudnn.deterministic = flags.cudnn_deterministic
-    train_metric = Metric(flags.epochs, len(train_loader), flags.batch_size)
+    train_metric = Metric(flags.batch_size)
     optimizer = get_optimizer(model.parameters(), flags)
     if flags.lr_decay_epochs:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
@@ -92,22 +92,15 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
         train_metric.start_loading(0)
         for iteration, batch in dlp_train.iter(enumerate(tqdm(train_loader, disable=(rank != 0) or not flags.verbose))):
             image, label = batch
-            t0 = time.time()
-            tt0 = time.time()
             train_metric.end_loading(iteration)
-            train_metric.start_step(iteration)
+            train_metric.start_compute(iteration)
             with Profile(cat="train", name="H2D"):
                 image, label = image.to(device), label.to(device)
-            t1 = time.time()
-            t0 = time.time()
             with Profile(cat="train", name="compute-forward"):
                 for callback in callbacks:
                     callback.on_batch_start()
                 if (sleep >= 0):
                     emulate_compute(device, sleep)
-                    t1 = time.time()
-                    if (rank==0):
-                        print(" training time [%d]: %10.5f" %(iteration, t1 - t0))
                     continue
 
                 with autocast(enabled=flags.amp):
@@ -134,10 +127,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
                     cumulative_loss.append(loss_value)                    
                 else:
                     loss_value = 0.0
-
-            t1 = time.time()
-            t0 = time.time()
-            train_metric.end_step(iteration)
+            train_metric.end_compute(iteration)
             train_metric.start_loading(iteration+1)
 
         mllog_end(key=CONSTANTS.EPOCH_STOP, sync=False,
