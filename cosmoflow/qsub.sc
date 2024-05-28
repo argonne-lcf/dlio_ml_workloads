@@ -7,7 +7,7 @@
 #PBS -l filesystems=home:eagle
 cd $PBS_O_WORKDIR
 export NNODES=$(cat $PBS_NODEFILE | uniq | sed -n $=)
-
+ID=$(echo $PBS_JOBID | cut -d "." -f 1)
 source ./setup.sh
 export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
 
@@ -20,3 +20,7 @@ aprun -n $((NNODES*4)) -N 4 --cc depth -d 16 python ./main.py \
       ++hydra.run.dir=results/${NNODES}x4/$TAG/ \
       ++model.training.train_epochs=2 \
       --config-name submission_dgxa100_2x8x1 
+nvidia-smi > results/${NNODES}x4/$TAG/gpu.info
+env >&  results/${NNODES}x4/$TAG/env.dat
+cp summary.json results/${NNODES}x4/$TAG/
+cp $0.o$ID $0.e$ID ${OUTPUT}/

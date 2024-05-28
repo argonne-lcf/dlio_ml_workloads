@@ -6,24 +6,19 @@ module load conda/$DATE_TAG
 export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
-export PATH=${WORKDIR}/pfw_utils:$PATH
-if [ -v PBS_NODEFILE ]; then
-    export PBS_JOBSIZE=$(cat $PBS_NODEFILE | sort | uniq | sed -n $=)
-fi
+export PYTHONPATH=${WORKDIR}/pfw_utils:$PYTHONPATH
+
 # Please change the following path accordingly 
 export ML_ENV=$HOME/PolarisAT_eagle/pyenvs/ml_workloads/$DATE_TAG
+
 export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
 if [[ -e $ML_ENV ]]; then
     conda activate $ML_ENV
-    export LD_LIBRARY_PATH=${ML_ENV}/lib/python3.11/site-packages/dlio_profiler/lib:${ML_ENV}/lib/python3.11/site-packages/dlio_profiler/lib64/:$LD_LIBRARY_PATH
-    export PYTHONPATH=$WORKDIR:$PYTHONPATH
 else
-    conda create --solver libmamba -c pytorch -c nvidia -p $ML_ENV "python==3.11.8"
-    #conda create  -p $ML_ENV --clone  /soft/datascience/conda/${DATE_TAG}/mconda3/
-    conda activate $ML_ENV
-    pip install /soft/applications/conda/$DATE_TAG/wheels/*.whl
+    conda activate 
+    python -m venv $ML_ENV --system-site-packages
+    source $ML_ENV/bin/activate
     ./install_dlio_profiler.sh
-    export PYTHONPATH=$WORKDIR/:$PYTHONPATH
     #install apex
     git clone https://github.com/NVIDIA/apex
     cd apex

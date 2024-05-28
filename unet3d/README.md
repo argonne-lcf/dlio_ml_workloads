@@ -1,6 +1,21 @@
 # 1. Problem
 This benchmark represents a 3D medical image segmentation task using [2019 Kidney Tumor Segmentation Challenge](https://kits19.grand-challenge.org/) dataset called [KiTS19](https://github.com/neheller/kits19). The task is carried out using a [U-Net3D](https://arxiv.org/pdf/1606.06650.pdf) model variant based on the [No New-Net](https://arxiv.org/pdf/1809.10483.pdf) paper.
 
+
+## Running UNet3D on Polaris @ ALCF
+
+Preprocessed dataset is available on the following directory: /eagle/datasets/unet3d/
+
+Run script:
+./run_polaris.sh
+
+
+
+
+
+
+--------
+
 ## Dataset
 
 The data is stored in the [KiTS19 github repository](https://github.com/neheller/kits19).
