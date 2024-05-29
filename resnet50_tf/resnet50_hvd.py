@@ -1,4 +1,4 @@
-# Copyright 2019 Uber Technologies, Inc. All Rights Reserved.
+# Copyright 2019 Uber Technologies, Inc. All Rights Reserved.A
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import tensorflow as tf
+import horovod.tensorflow as hvd
+from tensorflow.keras import applications
+
 import argparse
 import os
 import numpy as np
 import timeit
 import time
-import tensorflow as tf
-import horovod.tensorflow as hvd
-from tensorflow.keras import applications
 
 from pfw_utils.utility import Profile, PerfTrace
 import logging, sys
@@ -52,10 +53,11 @@ parser.add_argument('--data_folder', type=str, default="/eagle/datasets/ImageNet
 parser.add_argument("--output_folder", default='outputs', type=str)
 parser.add_argument("--transfer_size", default=262144, type=int)
 parser.add_argument("--datagen", default='tfrecord', type=str)
-
+hvd.init()
 args = parser.parse_args()
 args.cuda = not args.no_cuda
-pfwlogger = PerfTrace.initialize_log(args.output_folder, os.path.abspath(args.data_folder))    
+pfwlogger = PerfTrace.initialize_log(args.output_folder+f"/trace-{hvd.rank()}-of-{hvd.size()}.pfw",
+                                     os.path.abspath(args.data_folder), process_id=hvd.rank())    
 dlp = Profile("RESNET50")
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -69,7 +71,7 @@ ch.setLevel(logging.ERROR)
 ch.setFormatter(formatter)
 log.addHandler(ch)
 # Horovod: initialize Horovod.
-hvd.init()
+
 
 # Horovod: pin GPU to be used to process local rank (one GPU per process)
 if args.cuda:
@@ -79,6 +81,7 @@ if args.cuda:
     if gpus:
         tf.config.experimental.set_visible_devices(gpus[hvd.local_rank()], 'GPU')
 else:
+    print("NO GPU")
     os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 # Set up standard model.
@@ -154,7 +157,6 @@ def get_datagen():
         ds = tf.data.Dataset.zip((X, Y)).repeat().batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
     return ds
 
-@tf.function
 def benchmark_step(a, b, first_batch):
     # Horovod: (optional) compression algorithm.
     compression = hvd.Compression.fp16 if args.fp16_allreduce else hvd.Compression.none
