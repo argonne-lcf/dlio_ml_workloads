@@ -15,14 +15,14 @@
 import tensorflow as tf
 import horovod.tensorflow as hvd
 from tensorflow.keras import applications
-
+from mpi4py import MPI
 import argparse
 import os
 import numpy as np
 import timeit
 import time
 
-from pfw_utils.utility import Profile, PerfTrace
+from pfw_utils.utility import Profile, PerfTrace, Metric
 import logging, sys
 log = logging.getLogger('ResNet50')
 log.setLevel(logging.DEBUG)
@@ -52,13 +52,14 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--data_folder', type=str, default="/eagle/datasets/ImageNet/tfrecords")                    
 parser.add_argument("--output_folder", default='outputs', type=str)
 parser.add_argument("--transfer_size", default=262144, type=int)
-parser.add_argument("--datagen", default='tfrecord', type=str)
-hvd.init()
+parser.add_argument("--datagen", default='synthetic', type=str)
+
 args = parser.parse_args()
 args.cuda = not args.no_cuda
-pfwlogger = PerfTrace.initialize_log(args.output_folder+f"/trace-{hvd.rank()}-of-{hvd.size()}.pfw",
-                                     os.path.abspath(args.data_folder), process_id=hvd.rank())    
+hvd.init()
+pfwlogger = PerfTrace.initialize_log(f"{args.output_folder}/trace-{hvd.rank()}-of-{hvd.size()}.pfw", os.path.abspath(args.data_folder), process_id=hvd.rank())    
 dlp = Profile("RESNET50")
+
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh = logging.FileHandler(f"{args.output_folder}/resnet50_tf.log")
@@ -146,9 +147,9 @@ def get_datagen():
             return image, lab
         file_names = glob.glob(f"{args.data_folder}/*")        
         ds = tf.data.TFRecordDataset(filenames=file_names, buffer_size=args.transfer_size, num_parallel_reads=args.num_workers)
-        ds = ds.map(pass_fun, num_parallel_calls = args.num_computation_threads)
         ds = ds.shard(num_shards=hvd.size(), index=hvd.rank())
         ds = ds.batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
+        ds = ds.map(pass_fun, num_parallel_calls = args.num_computation_threads)        
     else:
         x = np.random.random((1000, 224, 224, 3))
         y = np.random.random((1000, 1))
@@ -157,6 +158,8 @@ def get_datagen():
         ds = tf.data.Dataset.zip((X, Y)).repeat().batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
     return ds
 
+@dlp.log
+@tf.function
 def benchmark_step(a, b, first_batch):
     # Horovod: (optional) compression algorithm.
     compression = hvd.Compression.fp16 if args.fp16_allreduce else hvd.Compression.none
@@ -187,6 +190,10 @@ if hvd.rank()==0:
     log.info('Batch size: %d' % args.batch_size)
     log.info('Number of %ss: %d' % (device, hvd.size()))
 import glob
+
+
+metric = Metric(args.batch_size, logger = log.info)
+
 #ds = tf.data.TFRecordDataset.list_files(file_names, shuffle=True)
 #ds = ds.apply(
 #        tf.data.experimental.parallel_interleave(
@@ -194,6 +201,7 @@ import glob
 #            cycle_length=args.num_workers,
 #            prefetch_input_elements=args.batch_size))
 ds = get_datagen()
+
 with tf.device(device):
     # Warm-up
     if hvd.rank() == 0:
@@ -206,18 +214,26 @@ with tf.device(device):
     if hvd.rank()==0:
         log.info('Running benchmark...')
     img_secs = []
-    for e in range(args.epochs):
-        with Profile(name="epoch", cat='train'):
-            t = time.time()
-            for a, b in ds.take(args.steps):
-                with Profile(name="compute", cat='train'):
-                    benchmark_step(a, b, first_batch=False)
-            t = time.time() -t                     
-            img_sec = args.batch_size * args.steps / t
-            if hvd.rank()==0:
-                log.info('Iter #%d: %.1f img/sec per %s' % (e, img_sec, device))
 
-                img_secs.append(img_sec)
+    for e in range(args.epochs):
+        t = time.time()
+        metric.start_epoch(e)
+        metric.start_loading(0)
+        step = 0
+        for a, b in ds.take(args.steps):
+            metric.end_loading(step)        
+            metric.start_compute(step)
+            with Profile(name="compute", cat='train'):
+                benchmark_step(a, b, first_batch=False)
+            metric.end_compute(step)
+            step += 1
+            metric.start_loading(step)            
+        metric.end_epoch(e)
+        t = time.time() -t
+        img_sec = args.batch_size * args.steps / t
+        if hvd.rank()==0:
+            log.info('Iter #%d: %.1f img/sec per %s' % (e, img_sec, device))
+            img_secs.append(img_sec)
     # Results
     img_sec_mean = np.mean(img_secs)
     img_sec_conf = 1.96 * np.std(img_secs)

@@ -9,7 +9,8 @@ from runtime.inference import evaluate
 from runtime.logging import mllog_event, mllog_start, mllog_end, CONSTANTS
 import time
 import numba
-from pfw_utils.utility import Profile
+from pfw_utils.utility import Profile, Metric
+
 import os
 skip_reduce = False
 try:
@@ -51,7 +52,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
     world_size = get_world_size()
     torch.backends.cudnn.benchmark = flags.cudnn_benchmark
     torch.backends.cudnn.deterministic = flags.cudnn_deterministic
-
+    train_metric = Metric(flags.batch_size, num_steps_cut=2)
     optimizer = get_optimizer(model.parameters(), flags)
     if flags.lr_decay_epochs:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
@@ -70,9 +71,11 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
     diverged = False
     next_eval_at = flags.start_eval_at
     model.train()
+
     for callback in callbacks:
         callback.on_fit_start()
     for epoch in range(1, flags.epochs + 1):
+        train_metric.start_epoch(epoch-1)
         cumulative_loss = []
         if epoch <= flags.lr_warmup_epochs and flags.lr_warmup_epochs > 0:
             lr_warmup(optimizer, flags.init_learning_rate, flags.learning_rate, epoch, flags.lr_warmup_epochs)
@@ -86,24 +89,18 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
         loss_value = None
         optimizer.zero_grad()
         t0 = time.time()
+        train_metric.start_loading(0)
         for iteration, batch in dlp_train.iter(enumerate(tqdm(train_loader, disable=(rank != 0) or not flags.verbose))):
             image, label = batch
-            t0 = time.time()
-            tt0 = time.time()
+            train_metric.end_loading(iteration)
+            train_metric.start_compute(iteration)
             with Profile(cat="train", name="H2D"):
                 image, label = image.to(device), label.to(device)
-            t1 = time.time()
-            if (rank==0):
-                print(" H2D time [%d]: %10.5f" %(iteration, t1 - t0))
-            t0 = time.time()
             with Profile(cat="train", name="compute-forward"):
                 for callback in callbacks:
                     callback.on_batch_start()
                 if (sleep >= 0):
                     emulate_compute(device, sleep)
-                    t1 = time.time()
-                    if (rank==0):
-                        print(" training time [%d]: %10.5f" %(iteration, t1 - t0))
                     continue
 
                 with autocast(enabled=flags.amp):
@@ -130,18 +127,14 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
                     cumulative_loss.append(loss_value)                    
                 else:
                     loss_value = 0.0
-
-            t1 = time.time()
-            if (rank==0):
-                print(" training time [%d]: %10.8f (s)     %10.8f (ms)" %(iteration, t1 - t0, t0*1000))
-                print(" step time [%d]: %10.8f (s)     %10.8f (ms)" %(iteration, t1 - tt0, t0*1000))
-            t0 = time.time()
+            train_metric.end_compute(iteration)
+            train_metric.start_loading(iteration+1)
 
         mllog_end(key=CONSTANTS.EPOCH_STOP, sync=False,
                   metadata={CONSTANTS.EPOCH_NUM: epoch, 'current_lr': optimizer.param_groups[0]['lr']})
         if flags.lr_decay_epochs:
             scheduler.step()
-
+        train_metric.end_epoch(epoch-1)
         if epoch == next_eval_at:
             next_eval_at += flags.evaluate_every
             del output

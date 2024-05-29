@@ -8,6 +8,8 @@ pip uninstall dlio-profiler-py
 cd /tmp/dlio-profiler
 libpath=`which python`
 libpath=${libpath%/bin/python}/lib/
+export CC=gcc-12
+export CXX=g++-12
 git submodule update --init --recursive
 rm -rvf $libpath/libgocha* $libpath/libdlio_profiler* $libpath/libcpp-logger.so $libpath/libbrahma* build *.egg*
 git pull

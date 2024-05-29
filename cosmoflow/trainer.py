@@ -23,7 +23,7 @@ from model.utils import Convolution3DLayout
 
 import utils
 #For DLIO profiler
-from pfw_utils.utility import Profile
+from pfw_utils.utility import Profile, Metric
 dlp_train = Profile("train")
 dlp_data = Profile("IO")
 dlp_eval = Profile("eval")
@@ -69,11 +69,11 @@ class Trainer(object):
         self.zeroing_stream = torch.cuda.Stream()
         self.prefetch_stream = torch.cuda.Stream()
         self.last_scale = None
-
+        steps = -1
+        self._metric = Metric(batch_size=config['data']['batch_size'])
         self._amp = amp
         if self._amp:
             self.scaler_ = torch.cuda.amp.GradScaler()
-
     def train_step(self,
                    x: torch.Tensor,
                    y_hat: torch.Tensor) -> None:
@@ -109,6 +109,8 @@ class Trainer(object):
     def train_epoch(self,
                     train_iter: DataIter,
                     epoch: int):
+        self._metric.start_epoch(epoch)
+        self._metric.start_loading(0)
         with utils.ProfilerSection(f"training epoch #{epoch}",
                                    self._enable_profiling):
             self.model.train()
@@ -132,21 +134,25 @@ class Trainer(object):
                         data = self._convert(input_data[0])
                         data = _convert_format(data)
                         label = input_data[1]
-
                 try:
                     with Profile(cat="IO", name="data_iter"):   
                         with torch.cuda.stream(self.prefetch_stream):
                             input_data = next(train_iter)
                 except StopIteration:
                     should_run = False
+                self._metric.end_loading(current_step)                    
+                self._metric.start_compute(current_step)                    
                 with Profile(cat="train", name="compute"):
                     self.train_step(data, label)
 
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=False)):
                     utils.cudaProfilerStop()
+                self._metric.end_compute(current_step)   
+                self._metric.start_loading(current_step+1)             
                 current_step += 1
             self.lr_scheduler.step()
+        self._metric.end_epoch(epoch)
 
     def eval_epoch(self,
                    eval_iter: DataIter,

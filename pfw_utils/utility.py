@@ -33,8 +33,33 @@ import importlib.util
 # UTC timestamp format with microsecond precision
 from pfw_utils.enumerations import LoggerType
 
-from dlio_profiler.logger import fn_interceptor as Profile
-from dlio_profiler.logger import dlio_logger as PerfTrace
+
+
+_DLIO_PROFILER_EXIST=True
+try:
+    import dlio_profiler
+except:
+    _DLIO_PROFILER_EXIST=False
+
+if _DLIO_PROFILER_EXIST:
+    from dlio_profiler.logger import fn_interceptor as Profile
+    from dlio_profiler.logger import dlio_logger as PerfTrace
+else:
+    from functools import wraps
+    class Profile:
+        def __init__(type="PROFILER"):
+            self.type = type
+        def log(self, func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                x = func(*args, **kwargs)
+                return x
+    class dlio_logger:
+        def __init__(self,):
+            self.type = None
+        def initialize_log(self, logfile=None, data_dir=None, process_id=-1):
+            pass
+    PerfTrace = dlio_logger()
 
 LOG_TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 from mpi4py import MPI
@@ -48,8 +73,6 @@ def add_padding(n, num_digits=None):
     else:
         return str_out
 
-
-
 def utcnow(format=LOG_TS_FORMAT):
     return datetime.now().strftime(format)
 
@@ -61,7 +84,86 @@ def get_rank():
 def get_size():
     return MPI.COMM_WORLD.size
 
-
+_STEPS = 10000
+_EPOCHS=100
+class Metric:
+    def __init__(self, batch_size, logger=None, num_steps_cut = 1):
+        self.num_steps_cut = num_steps_cut
+        self.epochs = 0
+        self.steps = 0
+        self.AU = np.zeros(_EPOCHS)
+        self.throughput = np.zeros(_EPOCHS)
+        self.compute_time = np.zeros((_EPOCHS, _STEPS))
+        self.loading_time = np.zeros((_EPOCHS, _STEPS))
+        self.step_time = np.zeros((_EPOCHS, _STEPS))
+        self.epoch_time = np.zeros(_EPOCHS)
+        self.logger = logger
+        self.current_epoch = 0
+        self.batch_size = batch_size
+        self.steps = 0
+        self.epoch_started = False
+        self.compute_started = False
+        self.loading_started = False
+        self.summary = {}
+    def start_epoch(self, epoch):
+        self.epoch_started = True
+        self.steps = 0
+        self.start_time_epoch = time()
+    def start_loading(self, step):
+        self.loading_started = True
+        self.start_time_loading = time()
+    def end_loading(self, step):
+        assert(self.loading_started)
+        self.end_time_loading = time()
+        self.loading_time[self.current_epoch][step] = self.end_time_loading - self.start_time_loading
+        self.loading_started = False
+    def end_epoch(self, epoch):
+        assert(self.epoch_started)
+        self.end_time_epoch = time()
+        self.epoch_time[epoch] = self.end_time_epoch - self.start_time_epoch
+        total_time = self.epoch_time[epoch] \
+            - np.sum(self.step_time[epoch][:self.num_steps_cut]) \
+            - np.sum(self.step_time[epoch][self.steps-self.num_steps_cut:self.steps])
+        compute_time = np.sum(self.compute_time[epoch][self.num_steps_cut:self.steps-self.num_steps_cut])
+        self.throughput[self.current_epoch] = self.batch_size*(self.steps-2*self.num_steps_cut)*get_size()/total_time
+        self.AU[epoch] = compute_time/total_time
+        if get_rank()==0:
+            self.logging(f"[{utcnow()}] Finished epoch {epoch}")
+            self.logging(f"AU[{epoch}] (%): {self.AU[epoch]*100:.4f}")
+            self.logging(f"Throughput (samples/second): {self.throughput[self.current_epoch]:.4f}")
+            self.logging(f"Compute time per step (s): {np.mean(self.compute_time[self.current_epoch][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f} ({np.std(self.compute_time[self.current_epoch][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f})")
+        self.epoch_started = False
+        self.epochs+=1
+        self.current_epoch+=1
+    def start_compute(self, step=-1):
+        self.compute_started = True
+        self.start_time_compute = time()
+    def end_compute(self, step=-1):
+        assert(self.compute_started)
+        self.compute_time[self.current_epoch][step] = time() - self.start_time_compute
+        self.step_time[self.current_epoch][step] = time() - self.start_time_loading
+        self.logging(f"[{utcnow()}] Step {step} Rank {get_rank()} processed {self.batch_size} samples in {self.step_time[self.current_epoch][step]:.4f} seconds")
+        self.steps += 1
+        self.compute_started = False
+    def logging(self, msg):
+        if self.logger is not None:
+            self.logger(msg)
+        else:
+            print(f"[METRIC] {msg}")
+    def __del__(self):
+        self.summary['AU_in_percentation'] = list(self.AU[:self.epochs])
+        self.summary['Throughput_in_samples_per_second'] = list(self.throughput[:self.epochs])
+        self.summary['epochs'] = self.epochs
+        self.summary['batch_size'] = self.batch_size
+        self.summary['compute_time'] = [l[:self.steps] for l in self.compute_time[:self.epochs]]
+        self.summary['step_time'] = [l[:self.steps] for l in self.step_time[:self.epochs]]
+        if get_rank()==0:
+            self.logging("============================================================")
+            self.logging(f"AU (%): {np.mean(self.AU[:self.epochs])*100:.4f} ({np.std(self.AU[:self.epochs])*100:.4f})")
+            self.logging(f"Throughput (samples/second): {np.mean(self.throughput[:self.epochs]):.4f} ({np.std(self.throughput[:self.epochs]):.4f})")
+            self.logging(f"Compute time per step (s): {np.mean(self.summary['compute_time'][:][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f} ({np.std(self.summary['compute_time'][:][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f})")
+            with open('summary.json', 'w') as outfile:
+                json.dump(self.summary, outfile, indent=4)
 def timeit(func):
     @wraps(func)
     def wrapper(*args, **kwargs):

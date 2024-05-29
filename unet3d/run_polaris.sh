@@ -2,6 +2,7 @@
 #COBALT -q gpu_a100 -t 1:00:00 -n 1
 # The following seven lines are specific to Argonne JLSE. Please comment them 
 #module load darshan/darshan-openmpi-gcc
+source /home/hzheng/PolarisAT_eagle/dlio_ml_workloads/setup_ml_env.sh
 export RDMAV_HUGEPAGES_SAFE=1
 set -e
 free -h 
@@ -12,14 +13,14 @@ free -h
 SEED=${1:--1}
 
 #MAX_EPOCHS=4000
-MAX_EPOCHS=${EPOCHS:-4}
+MAX_EPOCHS=${EPOCHS:-5}
 QUALITY_THRESHOLD="0.908"
-START_EVAL_AT=2
+START_EVAL_AT=10
 EVALUATE_EVERY=8
 LEARNING_RATE="0.8"
 LR_WARMUP_EPOCHS=200
 DATASET_DIR=${DATA_DIR:-"./data"}
-BATCH_SIZE=${BATCH_SIZE:-2}
+BATCH_SIZE=${BATCH_SIZE:-7}
 GRADIENT_ACCUMULATION_STEPS=1
 NUM_WORKERS=${NUM_WORKERS:-4}
 SLEEP=${SLEEP:--1}

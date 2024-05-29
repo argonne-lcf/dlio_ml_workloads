@@ -1,4 +1,6 @@
 git+https://github.com/NVIDIA/dllogger
 https://github.com/mlcommons/logging/archive/refs/tags/1.1.0-rc4.zip
 nibabel==3.2.1
-scipy
+numba
+scipy==1.12.0
+tqdm

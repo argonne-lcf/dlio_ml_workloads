@@ -1,15 +1,12 @@
 #!/bin/bash
 # modify this accordingly
 DATE_TAG=2024-04-29
-export VENV_HOME=$HOME/PolarisAT/pyenvs/dlio/$DATE_TAG
+module use /soft/modulefiles
+export VENV_HOME=$HOME/PolarisAT_eagle/pyenvs/dlio/$DATE_TAG
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
 export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
-export CUDA_HOME=/soft/compilers/cudatoolkit/12.4.1/
-export LD_LIBRARY_PATH=${CUDA_HOME}/lib:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH=/soft/compilers/cudatoolkit/cuda-11.8.0/lib64/:$LD_LIBRARY_PATH
-if [[ -e $VENV_HOME/bin/activate ]]; then
-    module use /soft/modulefiles/
+if [[ -e $VENV_HOME ]]; then
     module load conda/$DATE_TAG
     source ${VENV_HOME}/bin/activate
 else
@@ -26,6 +23,7 @@ else
     #CC=cc CXX=CC pip install -r requirements.txt
     python setup.py build
     python setup.py install
+    CC=cc CXX=CC MPICC=cc MPICXX=CC python setup.py install
     cd -
 fi
 # install 

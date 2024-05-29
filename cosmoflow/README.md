@@ -4,6 +4,18 @@ This repository contains PyTorch implementation of the Cosmoflow: Using Deep Lea
 Benchmark is based on publicly available reference code: [https://github.com/sparticlesteve/cosmoflow-benchmark](https://github.com/sparticlesteve/cosmoflow-benchmark) 
 and the paper: [https://arxiv.org/abs/1808.04728](https://arxiv.org/abs/1808.04728)
 
+## Building utils
+
+utils is dependence on Boost, libaio
+
+```bash
+mkdir -p utils/csrc/build
+cd utils/csrc/build
+cmake ..
+make all -j
+cd - 
+cp utils/csrc/build/libCosmoflowExt.so utils
+```
 
 ## Dataset
 
