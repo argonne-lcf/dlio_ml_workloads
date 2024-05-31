@@ -28,7 +28,7 @@ dlp_train = Profile("train")
 dlp_data = Profile("IO")
 dlp_eval = Profile("eval")
 from time import sleep, time
-
+import hydra
 DataIter = Iterator[Tuple[torch.Tensor, torch.Tensor]]
 
 TRAINING_DATASET_ITEMS = 524288
@@ -53,7 +53,8 @@ class Trainer(object):
                  lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
                  distenv: utils.DistributedEnv,
                  amp: bool = False,
-                 enable_profiling: bool = False):
+                 enable_profiling: bool = False,
+                 steps: int = 0):
         self.model = model
         self.loss_fn = nn.MSELoss()
         self.score_fn = utils.DistributedMeanAbsoluteError()
@@ -69,8 +70,12 @@ class Trainer(object):
         self.zeroing_stream = torch.cuda.Stream()
         self.prefetch_stream = torch.cuda.Stream()
         self.last_scale = None
-        steps = -1
-        self._metric = Metric(batch_size=config['data']['batch_size'])
+        try:
+            pfw_logdir = config['pfw_logdir']
+        except:
+            hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
+            pfw_logdir = hydra_cfg['runtime']['output_dir']        
+        self._metric = Metric(batch_size=config['data']['batch_size'], log_dir=pfw_logdir)
         self._amp = amp
         if self._amp:
             self.scaler_ = torch.cuda.amp.GradScaler()

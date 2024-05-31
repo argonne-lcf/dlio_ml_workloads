@@ -225,6 +225,7 @@ class CosmoflowMain(PytorchApplication):
                                                epoch_num=epoch+1)
         self._distenv.global_barrier()
 
+
 @hydra.main(config_path="configs",
             config_name="baseline",
             version_base=None)

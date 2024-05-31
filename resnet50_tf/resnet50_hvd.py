@@ -16,12 +16,11 @@ from mpi4py import MPI
 import argparse
 import os
 import numpy as np
-import timeit
 import time
 import tensorflow as tf
 import horovod.tensorflow as hvd
 from tensorflow.keras import applications
-
+hvd.init()
 from pfw_utils.utility import Profile, PerfTrace, Metric
 import logging, sys
 log = logging.getLogger('ResNet50')
@@ -34,12 +33,12 @@ parser.add_argument('--fp16-allreduce', action='store_true', default=False,
 
 parser.add_argument('--model', type=str, default='ResNet50',
                     help='model to benchmark')
-parser.add_argument('--batch-size', type=int, default=64,
+parser.add_argument('--batch-size', type=int, default=400,
                     help='input batch size')
 
 parser.add_argument('--num-warmup-batches', type=int, default=10,
                     help='number of warm-up batches that don\'t count towards benchmark')
-parser.add_argument('--steps', type=int, default=10,
+parser.add_argument('--steps', type=int, default=100,
                     help='number of batches per benchmark iteration')
 parser.add_argument('--epochs', type=int, default=10,
                     help='number of benchmark iterations')
@@ -52,8 +51,7 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--data_folder', type=str, default="/eagle/datasets/ImageNet/tfrecords")                    
 parser.add_argument("--output_folder", default='outputs', type=str)
 parser.add_argument("--transfer_size", default=262144, type=int)
-parser.add_argument("--datagen", default='synthetic', type=str)
-
+parser.add_argument("--datagen", default='synthetic')
 args = parser.parse_args()
 args.cuda = not args.no_cuda
 hvd.init()
@@ -146,18 +144,17 @@ def get_datagen():
             return image, lab
         file_names = glob.glob(f"{args.data_folder}/*")        
         ds = tf.data.TFRecordDataset(filenames=file_names, buffer_size=args.transfer_size, num_parallel_reads=args.num_workers)
-        ds = ds.map(pass_fun, num_parallel_calls = args.num_computation_threads)
         ds = ds.shard(num_shards=hvd.size(), index=hvd.rank())
         ds = ds.batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
+        ds = ds.map(pass_fun, num_parallel_calls = args.num_computation_threads)        
     else:
-        x = np.random.random((1000, 224, 224, 3))
-        y = np.random.random((1000, 1))
+        x = np.random.random((4000, 224, 224, 3))
+        y = np.random.random((4000, 1))
         X = tf.data.Dataset.from_tensor_slices(x)
         Y = tf.data.Dataset.from_tensor_slices(y)
         ds = tf.data.Dataset.zip((X, Y)).repeat().batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
     return ds
 @dlp.log
-@tf.function
 def benchmark_step(a, b, first_batch):
     # Horovod: (optional) compression algorithm.
     compression = hvd.Compression.fp16 if args.fp16_allreduce else hvd.Compression.none
@@ -190,7 +187,7 @@ if hvd.rank()==0:
 import glob
 
 
-metric = Metric(args.batch_size, logger = log.info)
+metric = Metric(args.batch_size, log_dir=args.output_folder)
 
 #ds = tf.data.TFRecordDataset.list_files(file_names, shuffle=True)
 #ds = ds.apply(
@@ -205,14 +202,12 @@ with tf.device(device):
     if hvd.rank() == 0:
         log.info('Running warmup...')
     for a, b in ds.take(1):
-        benchmark_step(a, b, first_batch=True)
-        timeit.timeit(lambda: benchmark_step(a, b, first_batch=False),
-                    number=args.num_warmup_batches)
+        #benchmark_step(a, b, first_batch=True)
+        benchmark_step(a, b, first_batch=False)
     # Benchmark
     if hvd.rank()==0:
         log.info('Running benchmark...')
     img_secs = []
-
     for e in range(args.epochs):
         t = time.time()
         metric.start_epoch(e)
