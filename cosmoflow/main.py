@@ -223,7 +223,7 @@ class CosmoflowMain(PytorchApplication):
                                                time=run_time.time_elapsed(),
                                                epoch_num=epoch+1)
         self._distenv.global_barrier()
-        self.pfwlogger.finalize()
+
 
 @hydra.main(config_path="configs",
             config_name="baseline",
