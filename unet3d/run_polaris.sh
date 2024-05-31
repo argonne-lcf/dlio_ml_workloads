@@ -3,6 +3,7 @@
 # The following seven lines are specific to Argonne JLSE. Please comment them 
 #module load darshan/darshan-openmpi-gcc
 source /home/hzheng/PolarisAT_eagle/dlio_ml_workloads/setup_ml_env.sh
+export PYTHONPATH=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/:$PYTHONPATH
 export RDMAV_HUGEPAGES_SAFE=1
 set -e
 free -h 
@@ -56,7 +57,7 @@ from mlperf_logging.mllog import constants
 from runtime.logging import mllog_event
 mllog_event(key=constants.CACHE_CLEAR, value=True)"
 #export LD_PRELOAD=$HOME//PolarisAT/pyenvs/ml_workload/lib/libdlio_profiler_preload.so
-aprun --cc depth -n ${NPROC} -N ${PPN} -d $((64/PPN)) -e OMP_NUM_THREADS=$((64/PPN)) ./launcher.sh python3 main.py --data_dir ${DATASET_DIR} \
+mpiexec -np ${NPROC} --ppn ${PPN} --cpu-bind depth -d $((64/PPN)) ./launcher.sh python3 main.py --data_dir ${DATASET_DIR} \
     --epochs ${MAX_EPOCHS} \
     --evaluate_every ${EVALUATE_EVERY} \
     --start_eval_at ${START_EVAL_AT} \
