@@ -16,7 +16,7 @@ mpiexec -np $((NNODES*4)) --ppn 4 --cpu-bind depth -d 16 python ./main.py \
       +log.timestamp=ms_${NNODES}x4 \
       +log.experiment_id=${PBS_JOBID} \
       ++data.stage=/local/scratch/ \
-      ++data.root_dir=/home/hzheng/datascience_grand/mlperf_hpc/hpc-nvidia/datasets/cosmoflow/tf_v2_gzip_256 \
+      ++data.root_dir=/eagle/DLIO/datasets/cosmoflow/tf_v2_gzip_256 \
       ++hydra.run.dir=results/${NNODES}x4/$TAG/ \
       ++model.training.train_epochs=2 \
       --config-name submission_dgxa100_2x8x1 
