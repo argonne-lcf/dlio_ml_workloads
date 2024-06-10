@@ -10,6 +10,7 @@
 cd $PBS_O_WORKDIR
 source $HOME/PolarisAT_eagle/dlio_ml_workloads/setup_ml_env.sh
 export DATA_TOP=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/unet3d
+[ -e ${DATA_TOP}/data ] || ln -s /eagle/datasets/unet3d ${DATA_TOP}/data
 export SKIP_REDUCE=1
 
 PBS_JOBSIZE=$(cat $PBS_NODEFILE | uniq | sed -n $=)
