@@ -8,13 +8,10 @@ and the paper: [https://arxiv.org/abs/1808.04728](https://arxiv.org/abs/1808.047
 
 utils is dependence on Boost, libaio
 
-```bash
-mkdir -p utils/csrc/build
-cd utils/csrc/build
-cmake ..
-make all -j
-cd - 
-cp utils/csrc/build/libCosmoflowExt.so utils
+Please run build_libCosmoFlowExt.sh to build the library, and ignore the linking error
+
+```
+sh ./build_libCosmoFlowExt.sh
 ```
 
 ## Dataset
