@@ -47,7 +47,7 @@ if _DLIO_PROFILER_EXIST:
 else:
     from functools import wraps
     class Profile:
-        def __init__(type="PROFILER"):
+        def __init__(self, type="PROFILER"):
             self.type = type
         def log(self, func):
             @wraps(func)
