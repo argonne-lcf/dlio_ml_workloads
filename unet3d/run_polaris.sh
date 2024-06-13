@@ -3,6 +3,7 @@
 # The following seven lines are specific to Argonne JLSE. Please comment them 
 #module load darshan/darshan-openmpi-gcc
 source /home/hzheng/PolarisAT_eagle/dlio_ml_workloads/setup_ml_env.sh
+export PYTHONPATH=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/:$PYTHONPATH
 export RDMAV_HUGEPAGES_SAFE=1
 set -e
 free -h 
@@ -19,7 +20,7 @@ START_EVAL_AT=10
 EVALUATE_EVERY=8
 LEARNING_RATE="0.8"
 LR_WARMUP_EPOCHS=200
-DATASET_DIR=${DATA_DIR:-"./data"}
+DATASET_DIR=${DATA_DIR:-"/eagle/datasets/unet3d/"}
 BATCH_SIZE=${BATCH_SIZE:-7}
 GRADIENT_ACCUMULATION_STEPS=1
 NUM_WORKERS=${NUM_WORKERS:-4}
@@ -56,7 +57,7 @@ from mlperf_logging.mllog import constants
 from runtime.logging import mllog_event
 mllog_event(key=constants.CACHE_CLEAR, value=True)"
 #export LD_PRELOAD=$HOME//PolarisAT/pyenvs/ml_workload/lib/libdlio_profiler_preload.so
-aprun --cc depth -n ${NPROC} -N ${PPN} -d $((64/PPN)) -e OMP_NUM_THREADS=$((64/PPN)) ./local_rank.sh python3 main.py --data_dir ${DATASET_DIR} \
+mpiexec -np ${NPROC} --ppn ${PPN} --cpu-bind depth -d $((64/PPN)) ./launcher.sh python3 main.py --data_dir ${DATASET_DIR} \
     --epochs ${MAX_EPOCHS} \
     --evaluate_every ${EVALUATE_EVERY} \
     --start_eval_at ${START_EVAL_AT} \

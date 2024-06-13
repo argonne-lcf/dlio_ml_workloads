@@ -36,9 +36,10 @@ from optimizer import get_optimizer
 
 # For DLIO profiler
 from pfw_utils.utility import Profile, PerfTrace
-
+_PFW_LOGGER=None
 class CosmoflowMain(PytorchApplication):
     def setup(self) -> None:
+        global _PFW_LOGGER
         super().setup()
         #For DLIO profiler
         if self._config['data']['dataset']!="synthetic":
@@ -55,7 +56,7 @@ class CosmoflowMain(PytorchApplication):
             hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
             pfw_logdir = hydra_cfg['runtime']['output_dir']            
 
-        self.pfwlogger = PerfTrace.initialize_log(f"{pfw_logdir}/trace-{self._distenv.rank}-of-{self._distenv.size}.pfw", os.path.abspath(data_folder), process_id = self._distenv.rank)
+        _PFW_LOGGER = PerfTrace.initialize_log(f"{pfw_logdir}/trace-{self._distenv.rank}-of-{self._distenv.size}.pfw", os.path.abspath(data_folder), process_id = self._distenv.rank)
 
         with utils.ProfilerSection("initialization", profile=self._config["profile"]):
             super().init_ddp()
@@ -223,7 +224,7 @@ class CosmoflowMain(PytorchApplication):
                                                time=run_time.time_elapsed(),
                                                epoch_num=epoch+1)
         self._distenv.global_barrier()
-        self.pfwlogger.finalize()
+
 
 @hydra.main(config_path="configs",
             config_name="baseline",
@@ -234,3 +235,4 @@ def main(cfg: OmegaConf) -> Any:
 
 if __name__ == "__main__":
     main()
+    _PFW_LOGGER.finalize()

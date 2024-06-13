@@ -16,13 +16,13 @@ source setup_ml_env.sh
 ```
 
 ## Real workloads
-- ResNet50
-  We have two implementations, one with PyTorch [./resnet50/resnet50_hvd.py](./resnet50/resnet50_hvd.py), one with TensorFlow [./resnet50/resnet50_hvd.py](./resnet50/resnet50_hvd.py)
-- CosmoFlow 
-  This is a workload adopted from Nvidia's submission of MLPerf HPC
 - UNet3D 
   This is for medical image segmentation from the reference implementation
-- deepcam
+- ResNet50
+  We have two implementations, one with PyTorch [./resnet50/resnet50_hvd.py](./resnet50/resnet50_hvd.py), one with TensorFlow [./resnet50/resnet50_hvd.py](./resnet50_tf/resnet50_hvd.py)
+- CosmoFlow 
+  This is a workload adopted from Nvidia's submission of MLPerf HPC. 
+- Deepcam
   PyTorch implementation for the climate segmentation benchmark, based on the
   Exascale Deep Learning for Climate Analytics codebase here:
   https://github.com/azrael417/ClimDeepLearn, and the paper:

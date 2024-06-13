@@ -52,7 +52,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
     world_size = get_world_size()
     torch.backends.cudnn.benchmark = flags.cudnn_benchmark
     torch.backends.cudnn.deterministic = flags.cudnn_deterministic
-    train_metric = Metric(flags.batch_size, num_steps_cut=2)
+    train_metric = Metric(flags.batch_size, num_steps_cut=4, log_dir=flags.output_dir)
     optimizer = get_optimizer(model.parameters(), flags)
     if flags.lr_decay_epochs:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,

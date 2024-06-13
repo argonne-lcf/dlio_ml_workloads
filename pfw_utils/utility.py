@@ -87,7 +87,7 @@ def get_size():
 _STEPS = 10000
 _EPOCHS=100
 class Metric:
-    def __init__(self, batch_size, logger=None, num_steps_cut = 1):
+    def __init__(self, batch_size, logger=None, num_steps_cut = 1, log_dir="./"):
         self.num_steps_cut = num_steps_cut
         self.epochs = 0
         self.steps = 0
@@ -103,6 +103,7 @@ class Metric:
         self.steps = 0
         self.epoch_started = False
         self.compute_started = False
+        self.log_dir = log_dir
         self.loading_started = False
         self.summary = {}
     def start_epoch(self, epoch):
@@ -151,18 +152,18 @@ class Metric:
         else:
             print(f"[METRIC] {msg}")
     def __del__(self):
-        self.summary['AU_in_percentation'] = list(self.AU[:self.epochs])
-        self.summary['Throughput_in_samples_per_second'] = list(self.throughput[:self.epochs])
+        self.summary['AU_in_percentation'] = [d for d in self.AU[:self.epochs]]
+        self.summary['Throughput_in_samples_per_second'] = [d for d in self.throughput[:self.epochs]]
         self.summary['epochs'] = self.epochs
         self.summary['batch_size'] = self.batch_size
-        self.summary['compute_time'] = [l[:self.steps] for l in self.compute_time[:self.epochs]]
-        self.summary['step_time'] = [l[:self.steps] for l in self.step_time[:self.epochs]]
+        self.summary['compute_time'] = [[d for d in l[:self.steps]] for l in self.compute_time[:self.epochs]]
+        self.summary['step_time'] = [[d for d in l[:self.steps]] for l in self.step_time[:self.epochs]]
         if get_rank()==0:
             self.logging("============================================================")
             self.logging(f"AU (%): {np.mean(self.AU[:self.epochs])*100:.4f} ({np.std(self.AU[:self.epochs])*100:.4f})")
             self.logging(f"Throughput (samples/second): {np.mean(self.throughput[:self.epochs]):.4f} ({np.std(self.throughput[:self.epochs]):.4f})")
             self.logging(f"Compute time per step (s): {np.mean(self.summary['compute_time'][:][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f} ({np.std(self.summary['compute_time'][:][self.num_steps_cut:self.steps-self.num_steps_cut]):.4f})")
-            with open('summary.json', 'w') as outfile:
+            with open(f'{self.log_dir}/summary.json', 'w') as outfile:
                 json.dump(self.summary, outfile, indent=4)
 def timeit(func):
     @wraps(func)

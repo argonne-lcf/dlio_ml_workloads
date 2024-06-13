@@ -18,7 +18,7 @@ from torch.profiler import profile, record_function, ProfilerActivity
 
 import torchvision.models as models
 import signal
-
+metric = None
 # 1. Initialize Horovod
 import horovod.torch as hvd
 hvd.init()
@@ -29,7 +29,7 @@ import nvidia.dali.types as types
 import nvidia.dali.fn as fn
 
 # For DLIO profiler
-from pfw_utils.utility import Profile, PerfTrace
+from pfw_utils.utility import Profile, PerfTrace, Metric
 dlp = Profile("RESNET50")
 #compute_dlp = dlp_event_logging("Compute")
 log = logging.getLogger('ResNet50')
@@ -90,47 +90,54 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
 
     end = time.time()
     log.info("start training")
+    metric.start_epoch(epoch)
+    metric.start_loading(0)
     for i, (images, target) in dlp_train.iter(enumerate(train_loader)):
-            # measure data loading time
-            data_time.update(time.time() - end)
-            with Profile(name="H2D", cat="train"):                        
-                # move data to the same device as model - cpu-gpu transfer
-                images = images.to(device)
-                target = target.to(device)
-            with Profile(name="compute-forward", cat="train"):
-                # compute output
-                output = model(images)
-                loss = criterion(output, target)
-            with Profile(name="compute-backward", cat="train"):
-                # measure accuracy and record loss
-                acc1, acc5 = accuracy(output, target, topk=(1, 5))
-                losses.update(loss.item(), images.size(0))
-                top1.update(acc1[0], images.size(0))
-                top5.update(acc5[0], images.size(0))
+        metric.end_loading(i)
+        metric.start_compute(step)
+        # measure data loading time
+        data_time.update(time.time() - end)
+        with Profile(name="H2D", cat="train"):                        
+            # move data to the same device as model - cpu-gpu transfer
+            images = images.to(device)
+            target = target.to(device)
+        with Profile(name="compute-forward", cat="train"):
+            # compute output
+            output = model(images)
+            loss = criterion(output, target)
+        with Profile(name="compute-backward", cat="train"):
+            # measure accuracy and record loss
+            acc1, acc5 = accuracy(output, target, topk=(1, 5))
+            losses.update(loss.item(), images.size(0))
+            top1.update(acc1[0], images.size(0))
+            top5.update(acc5[0], images.size(0))
 
-                # compute gradient and do SGD step
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
+            # compute gradient and do SGD step
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        metric.end_compute(step)
+        metric.start_loading(step+1)
             # measure elapsed time
-            if i == 0:
-                first_batch_time = time.time() - end
-            batch_time.update(time.time() - end)
-            end = time.time()
+        if i == 0:
+            first_batch_time = time.time() - end
+        batch_time.update(time.time() - end)
+        end = time.time()
 
-            if i % args.print_freq == 0 and hvd.rank() == 0:
-                progress.display(i + 1)
-            if i == args.steps-1 and args.steps > 0:
-                if hvd.rank() == 0:
-                    log.info('Throughput: {:.3f} images/s,\n'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time))+
-                        'Batch size: {}\n'.format(args.batch_size)+
-                        'Num of GPUs: {}\n'.format(hvd.size())+
-                        'Total time: {:.3f} s\n'.format(batch_time.sum)+
-                        'Average batch time: {:.3f} s\n'.format(batch_time.avg)+
-                        'First batch time: {:.3f} s\n'.format(first_batch_time))
-                return 0
-#                log_inst.finalize()
+        if i % args.print_freq == 0 and hvd.rank() == 0:
+            progress.display(i + 1)
+        if i == args.steps-1 and args.steps > 0:
+            if hvd.rank() == 0:
+                log.info('Throughput: {:.3f} images/s,\n'.format((args.steps-1) * args.batch_size * hvd.size() / (batch_time.sum-first_batch_time))+
+                         'Batch size: {}\n'.format(args.batch_size)+
+                         'Num of GPUs: {}\n'.format(hvd.size())+
+                         'Total time: {:.3f} s\n'.format(batch_time.sum)+
+                         'Average batch time: {:.3f} s\n'.format(batch_time.avg)+
+                         'First batch time: {:.3f} s\n'.format(first_batch_time))
+            metric.end_epoch(epoch)                
+            return 0
+        metric.end_epoch(epoch)
+        #                log_inst.finalize()
 
 
 
@@ -224,7 +231,7 @@ def main():
     pfwlogger = PerfTrace.initialize_log(args.output_folder+f"/trace-{hvd.rank()}-of-{hvd.size()}.pfw", os.path.abspath(args.data), process_id = hvd.rank())    
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     use_mps = not args.no_mps and torch.backends.mps.is_available()
-
+    global metric =Metric(args.batch_size, log_dir = args.output_folder)
     torch.manual_seed(args.seed)
 
     if use_cuda:
