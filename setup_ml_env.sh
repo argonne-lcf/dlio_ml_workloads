@@ -14,8 +14,7 @@ fi
 export ML_ENV=$HOME/PolarisAT_eagle/pyenvs/ml_workloads/$DATE_TAG
 export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
 if [[ -e $ML_ENV ]]; then
-    conda activate $ML_ENV
-    export LD_LIBRARY_PATH=${ML_ENV}/lib/python3.11/site-packages/dlio_profiler/lib:${ML_ENV}/lib/python3.11/site-packages/dlio_profiler/lib64/:$LD_LIBRARY_PATH
+    source $ML_ENV/bin/activate
     export PYTHONPATH=$WORKDIR:$PYTHONPATH
 else
     conda create --solver libmamba -c pytorch -c nvidia -p $ML_ENV "python==3.11.8"
