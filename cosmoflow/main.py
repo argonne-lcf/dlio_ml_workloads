@@ -219,6 +219,12 @@ class CosmoflowMain(PytorchApplication):
 
                 torch.cuda.synchronize()
             self._distenv.local_barrier()
+            if not self._run_stop_printed:
+                utils.logger.mllogger.log_run_stop(status=run_status,
+                                                   time=run_time.time_elapsed(),
+                                                   epoch_num=epoch+1)
+            self._distenv.global_barrier()
+            
             return run_status
         if os.getenv('TORCH_PROFILER_ENABLE')=="1":
             from torch.profiler import profile, record_function, ProfilerActivity
@@ -230,13 +236,6 @@ class CosmoflowMain(PytorchApplication):
             )
         else:
             run_status = run()
-
-        if not self._run_stop_printed:
-            utils.logger.mllogger.log_run_stop(status=run_status,
-                                               time=run_time.time_elapsed(),
-                                               epoch_num=epoch+1)
-        self._distenv.global_barrier()
-
 
 @hydra.main(config_path="configs",
             config_name="baseline",
