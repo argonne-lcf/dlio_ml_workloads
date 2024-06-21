@@ -101,19 +101,19 @@ class Trainer(object):
             else:
                 self.optimizer.zero_grad()
                 if self._amp:
-                    with Profile("compute-forward", name="train") as dlp:
+                    with Profile("compute", name="forward") as dlp:
                         with torch.cuda.amp.autocast():
                             y = self.model(x)
                             loss = self.loss_fn(y, y_hat)
-                    with Profile("compute-backward", name="train") as dlp:
+                    with Profile("compute", name="backward") as dlp:
                         self.scaler_.scale(loss).backward()
                         self.scaler_.step(self.optimizer)
                         self.scaler_.update()
                 else:
-                    with Profile("compute-forward", name="train") as dlp:
+                    with Profile("compute", name="forward") as dlp:                    
                         y = self.model(x)
                         loss = self.loss_fn(y, y_hat)
-                    with Profile("compute-backward", name="train") as dlp:
+                    with Profile("compute", name="backward") as dlp:                        
                         loss.backward()
                         self.optimizer.step()
 
@@ -139,7 +139,7 @@ class Trainer(object):
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=True)):
                     utils.cudaProfilerStart()
-                with Profile(cat="IO", name="preprocess"):
+                with Profile("IO", name="preprocess"):
                     with utils.ProfilerSection("convert", self._enable_profiling):
                         torch.cuda.current_stream().wait_stream(self.prefetch_stream)
                         data = self._convert(input_data[0])
@@ -153,7 +153,7 @@ class Trainer(object):
                     should_run = False
                 self._metric.end_loading(current_step)                    
                 self._metric.start_compute(current_step)                    
-                with Profile("train", name="compute"):
+                with Profile("train", name="train_step"):
                     self.train_step(data, label)
 
                 if ("profile_range" in self._config and
