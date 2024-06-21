@@ -4,7 +4,7 @@
 #PBS -l walltime=1:00:00
 #PBS -M huihuo.zheng@anl.gov
 #PBS -A datascience
-#PBS -l filesystems=eagle:home
+#PBS -l filesystems=tegu:home
 #PBS -q debug
 
 cd $PBS_O_WORKDIR

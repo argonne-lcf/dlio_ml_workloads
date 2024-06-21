@@ -86,18 +86,20 @@ class Trainer(object):
                    y_hat: torch.Tensor) -> None:
         with utils.ProfilerSection("training step", self._enable_profiling):
             if hasattr(self.model, "graph_capture"):
-                with utils.ProfilerSection("copy", self._enable_profiling):
-                    with torch.cuda.stream(self.zeroing_stream):
-                        self.model.zero_capture.replay()
+                with Profile("compute", name="forward") as dlp:                                    
+                    with utils.ProfilerSection("copy", self._enable_profiling):
+                        with torch.cuda.stream(self.zeroing_stream):
+                            self.model.zero_capture.replay()
 
-                    self.model.static_input_data.copy_(x)
-                    self.model.static_input_label.copy_(y_hat)
-                    torch.cuda.current_stream().wait_stream(self.zeroing_stream)
+                        self.model.static_input_data.copy_(x)
+                        self.model.static_input_label.copy_(y_hat)
+                        torch.cuda.current_stream().wait_stream(self.zeroing_stream)
 
-                with utils.ProfilerSection("replay", self._enable_profiling):
-                    self.model.graph_capture.replay()
-                self.scaler_.step(self.optimizer)
-                self.scaler_.update()
+                    with utils.ProfilerSection("replay", self._enable_profiling):
+                        self.model.graph_capture.replay()
+                with Profile("compute", name="backward") as dlp:                                                
+                    self.scaler_.step(self.optimizer)
+                    self.scaler_.update()
             else:
                 self.optimizer.zero_grad()
                 if self._amp:
@@ -139,15 +141,16 @@ class Trainer(object):
                 if ("profile_range" in self._config and
                         _should_mark_profiling(epoch, current_step, self._config["profile_range"], start=True)):
                     utils.cudaProfilerStart()
-                with Profile("IO", name="preprocess"):
-                    with utils.ProfilerSection("convert", self._enable_profiling):
+
+                with utils.ProfilerSection("convert", self._enable_profiling):
+                    with Profile("IO", name="preprocess"):                        
                         torch.cuda.current_stream().wait_stream(self.prefetch_stream)
                         data = self._convert(input_data[0])
                         data = _convert_format(data)
                         label = input_data[1]
                 try:
-                    with Profile("IO", name="data_iter"):   
-                        with torch.cuda.stream(self.prefetch_stream):
+                    with torch.cuda.stream(self.prefetch_stream):
+                        with Profile("IO", name="data_next"):                               
                             input_data = next(train_iter)
                 except StopIteration:
                     should_run = False
@@ -179,7 +182,7 @@ class Trainer(object):
                         data = self._convert(input_data[0])
                         label = input_data[1]
                         data = _convert_format(data)
-                    with Profile("eval", name="compute"):
+                    with Profile("compute", name="eval"):
                         if self._amp:
                             with torch.cuda.amp.autocast():
                                 y = self.model(data)
