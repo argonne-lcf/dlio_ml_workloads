@@ -15,7 +15,7 @@ export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
 if [[ -e $ML_ENV ]]; then
     source $ML_ENV/bin/activate
     export PYTHONPATH=$WORKDIR:$PYTHONPATH
-    conda activate $ML_ENV
+    source $ML_ENV/bin/activate
 else
     conda activate 
     python -m venv $ML_ENV --system-site-packages

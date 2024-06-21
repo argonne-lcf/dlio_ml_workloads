@@ -34,7 +34,7 @@ dlp = Profile("RESNET50")
 #compute_dlp = dlp_event_logging("Compute")
 log = logging.getLogger('ResNet50')
 log.setLevel(logging.DEBUG)
-
+metric = None
 
 # def capture_signal(signal_number, frame):
 #     log_inst.finalize()
@@ -90,22 +90,22 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
 
     end = time.time()
     log.info("start training")
-    metric.start_epoch(epoch)
+    metric.start_epoch(epoch-1)
     metric.start_loading(0)
     for i, (images, target) in dlp_train.iter(enumerate(train_loader)):
         metric.end_loading(i)
-        metric.start_compute(step)
+        metric.start_compute(i)
         # measure data loading time
         data_time.update(time.time() - end)
-        with Profile(name="H2D", cat="train"):                        
+        with Profile("H2D", name="train"):                        
             # move data to the same device as model - cpu-gpu transfer
             images = images.to(device)
             target = target.to(device)
-        with Profile(name="compute-forward", cat="train"):
+        with Profile("compute-forward", name="train"):
             # compute output
             output = model(images)
             loss = criterion(output, target)
-        with Profile(name="compute-backward", cat="train"):
+        with Profile("compute-backward", name="train"):
             # measure accuracy and record loss
             acc1, acc5 = accuracy(output, target, topk=(1, 5))
             losses.update(loss.item(), images.size(0))
@@ -116,8 +116,8 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        metric.end_compute(step)
-        metric.start_loading(step+1)
+        metric.end_compute(i)
+        metric.start_loading(i+1)
             # measure elapsed time
         if i == 0:
             first_batch_time = time.time() - end
@@ -134,11 +134,9 @@ def train(train_loader, model, criterion, optimizer, epoch, device, args):
                          'Total time: {:.3f} s\n'.format(batch_time.sum)+
                          'Average batch time: {:.3f} s\n'.format(batch_time.avg)+
                          'First batch time: {:.3f} s\n'.format(first_batch_time))
-            metric.end_epoch(epoch)                
+            metric.end_epoch(epoch-1)                
             return 0
-        metric.end_epoch(epoch)
-        #                log_inst.finalize()
-
+    metric.end_epoch(epoch-1)
 
 
 def test(model, device, test_loader):
@@ -147,9 +145,9 @@ def test(model, device, test_loader):
     correct = 0
     with torch.no_grad():
         for data, target in dlp_eval(test_loader):
-            with Profile(name="H2D", cat="eval"):                                    
+            with Profile("H2D", name="eval"):                                    
                 data, target = data.to(device), target.to(device)
-            with Profile(name="compute", cat="eval"):
+            with Profile("compute", name="eval"):
                 output = model(data)
                 test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
                 pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
@@ -201,13 +199,13 @@ def main():
                     metavar='N', help='number of iterations to measure throughput, -1 for disable')
     parser.add_argument('--save_model', default=0, type=int,
                 metavar='CK', help='checkpointing, -1 for disable')
-    parser.add_argument("--output_folder", default='outputs', type=str)
+    parser.add_argument("--output-folder", default='outputs', type=str)
     parser.add_argument("--profile", action='store_true', help="use pytorch profiler")
     parser.add_argument("--shuffle", action='store_true', help="shuffle the dataset")
     parser.add_argument("--custom_image_loader", action='store_true', help="use custom_image_folder")
-    parser.add_argument("--num_workers", default=4, type=int)
+    parser.add_argument("--num-workers", default=4, type=int)
     parser.add_argument("--dont_pin_memory", action='store_true')
-    parser.add_argument("--multiprocessing_context", default=None, type=str)
+    parser.add_argument("--multiprocessing-context", default=None, type=str)
 
     args = parser.parse_args()
     os.makedirs(args.output_folder, exist_ok=True)
@@ -231,7 +229,8 @@ def main():
     pfwlogger = PerfTrace.initialize_log(args.output_folder+f"/trace-{hvd.rank()}-of-{hvd.size()}.pfw", os.path.abspath(args.data), process_id = hvd.rank())    
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     use_mps = not args.no_mps and torch.backends.mps.is_available()
-    global metric =Metric(args.batch_size, log_dir = args.output_folder)
+    global metric
+    metric =Metric(args.batch_size, log_dir = args.output_folder)
     torch.manual_seed(args.seed)
 
     if use_cuda:
@@ -344,9 +343,10 @@ def main():
     if hvd.rank() == 0:
         log.info(time.time()-t0)
         if args.save_model:
-            with Profile(name="checkpointing", cat='IO'):
+            with Profile("checkpointing", name='IO'):
             #with dlp_event_logging("IO", name="checkpointing") as compute:
                 torch.save(model.state_dict(), "resnet50.pt")
+    metric.finalize()
     pfwlogger.finalize()
     #test(model, device, val_loader)
     #log_inst.finalize()

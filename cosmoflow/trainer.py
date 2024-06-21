@@ -79,6 +79,8 @@ class Trainer(object):
         self._amp = amp
         if self._amp:
             self.scaler_ = torch.cuda.amp.GradScaler()
+
+    @dlp_train.log
     def train_step(self,
                    x: torch.Tensor,
                    y_hat: torch.Tensor) -> None:
@@ -99,17 +101,21 @@ class Trainer(object):
             else:
                 self.optimizer.zero_grad()
                 if self._amp:
-                    with torch.cuda.amp.autocast():
+                    with Profile("compute-forward", name="train") as dlp:
+                        with torch.cuda.amp.autocast():
+                            y = self.model(x)
+                            loss = self.loss_fn(y, y_hat)
+                    with Profile("compute-backward", name="train") as dlp:
+                        self.scaler_.scale(loss).backward()
+                        self.scaler_.step(self.optimizer)
+                        self.scaler_.update()
+                else:
+                    with Profile("compute-forward", name="train") as dlp:
                         y = self.model(x)
                         loss = self.loss_fn(y, y_hat)
-                    self.scaler_.scale(loss).backward()
-                    self.scaler_.step(self.optimizer)
-                    self.scaler_.update()
-                else:
-                    y = self.model(x)
-                    loss = self.loss_fn(y, y_hat)
-                    loss.backward()
-                    self.optimizer.step()
+                    with Profile("compute-backward", name="train") as dlp:
+                        loss.backward()
+                        self.optimizer.step()
 
     def train_epoch(self,
                     train_iter: DataIter,
@@ -140,14 +146,14 @@ class Trainer(object):
                         data = _convert_format(data)
                         label = input_data[1]
                 try:
-                    with Profile(cat="IO", name="data_iter"):   
+                    with Profile("IO", name="data_iter"):   
                         with torch.cuda.stream(self.prefetch_stream):
                             input_data = next(train_iter)
                 except StopIteration:
                     should_run = False
                 self._metric.end_loading(current_step)                    
                 self._metric.start_compute(current_step)                    
-                with Profile(cat="train", name="compute"):
+                with Profile("train", name="compute"):
                     self.train_step(data, label)
 
                 if ("profile_range" in self._config and
