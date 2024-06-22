@@ -1,11 +1,16 @@
 #!/bin/bash
 # modify this accordingly
+export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/
+
+# Base PYTHON environment
 DATE_TAG=2024-04-29
 module use /soft/modulefiles
-export VENV_HOME=$HOME/PolarisAT_eagle/pyenvs/dlio/$DATE_TAG
+export VENV_HOME=${WORKDIR}/soft/pyenvs/dlio/$DATE_TAG
+
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
 export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
+
 if [[ -e $VENV_HOME ]]; then
     module load conda/$DATE_TAG
     source ${VENV_HOME}/bin/activate
@@ -16,13 +21,9 @@ else
     python -m venv $VENV_HOME --system-site-packages
     source $VENV_HOME/bin/activate
     ./install_dlio_profiler.sh
-    ## Install mpi4py 
-    ## Main package
-    [ -e dlio/dlio_benchmark ] || git clone https://github.com/argonne-lcf/dlio_benchmark.git dlio/dlio_benchmark/
-    cd dlio/dlio_benchmark/
-    #CC=cc CXX=CC pip install -r requirements.txt
-    python setup.py build
-    python setup.py install
+    [ -e /tmp/$USER/dlio_benchmark ] || git clone https://github.com/argonne-lcf/dlio_benchmark.git /tmp/$USER/dlio_benchmark/
+    cd /tmp/$USER/dlio_benchmark/
+    CC=cc CXX=CC pip install -r requirements.txt
     CC=cc CXX=CC MPICC=cc MPICXX=CC python setup.py install
     cd -
 fi

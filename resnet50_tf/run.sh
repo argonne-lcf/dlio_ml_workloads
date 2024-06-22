@@ -7,7 +7,8 @@
 #PBS -l filesystems=home:eagle
 
 cd $PBS_O_WORKDIR
-source /home/hzheng/PolarisAT_eagle/dlio_ml_workloads/setup_ml_env.sh
+export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads
+source ${WORKDIR}/setup_ml_env.sh
 export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
 aprun -n 1 -N 1 --cc depth -e OMP_NUM_THREADS=64 -d 64 \
         python resnet50_hvd.py --output_folder results/n1.g1.w4/$TAG/  \
