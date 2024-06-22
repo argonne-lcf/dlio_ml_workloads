@@ -3,23 +3,30 @@
 #PBS -l walltime=1:00:00
 #PBS -l nodes=2:ppn=4
 #PBS -M huihuo.zheng@anl.gov
-#PBS -q S1948341 -A GPU_Hack
+#PBS -A datascience
+#PBS -q debug
 #PBS -l filesystems=home:eagle
 cd $PBS_O_WORKDIR
+export WORKDIR=$HOME/dlio_ml_workloads/
+source $WORKDIR/setup_ml_env.sh
+export TORCH_PROFILER_ENABLE=1
+
 export NNODES=$(cat $PBS_NODEFILE | uniq | sed -n $=)
 ID=$(echo $PBS_JOBID | cut -d "." -f 1)
-source ./setup.sh
-export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
-
-mpiexec -np $((NNODES*4)) --ppn 4 --cpu-bind depth -d 16 python ./main.py \
-      +mpi.local_size=4 \
-      +log.timestamp=ms_${NNODES}x4 \
+export TAG=$(date +"%Y-%m-%d-%H-%M-%S").$ID
+export BATCH_SIZE=1
+export PPN=${PPN:-4}
+export OUTPUT=results/n${NNODES}.g$PPN.b${BATCH_SIZE}/$TAG/
+mkdir -p $OUTPUT
+mpiexec -np $((NNODES*PPN)) --ppn $PPN --cpu-bind depth -d 16 python ./main.py \
+      +mpi.local_size=$PPN \
+      +log.timestamp=ms_${NNODES}x$PPN \
       +log.experiment_id=${PBS_JOBID} \
       ++data.stage=/local/scratch/ \
-      ++data.root_dir=/eagle/DLIO/datasets/cosmoflow/tf_v2_gzip_256 \
-      ++hydra.run.dir=results/${NNODES}x4/$TAG/ \
+      ++data.root_dir=${WORKDIR}/datasets/cosmoflow/tf_v2_gzip_256 \
+      ++hydra.run.dir=${OUTPUT} \
       ++model.training.train_epochs=2 \
-      --config-name submission_dgxa100_2x8x1 
-nvidia-smi > results/${NNODES}x4/$TAG/gpu.info
-env >&  results/${NNODES}x4/$TAG/env.dat
+      --config-name submission_dgxa100_2x8x1 | tee -a ${OUTPUT}/output.log
+nvidia-smi > ${OUTPUT}/gpu.info
+env >&  ${OUTPUT}/env.dat
 cp $0.o$ID $0.e$ID ${OUTPUT}/

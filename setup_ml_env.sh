@@ -10,12 +10,13 @@ module load conda/$DATE_TAG
 # DLIO profiler
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
+export DARSHAN_DISABLE=1 
 export PYTHONPATH=${WORKDIR}:$PYTHONPATH
 
 # Please change the following path accordingly 
 export ML_ENV=${WORKDIR}/soft/pyenvs/ml_workloads/$DATE_TAG
 export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
-
+export LD_LIBRARY_PATH=$WORKDIR/soft/boost/1.85.0/lib:$LD_LIBRARY_PATH
 if [[ -e $ML_ENV ]]; then
     export PYTHONPATH=$WORKDIR:$PYTHONPATH
     source $ML_ENV/bin/activate
@@ -61,3 +62,4 @@ export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib/:$LD_LIBRARY_PATH
 export FI_CXI_DISABLE_HOST_REGISTER=1
 export FI_MR_CACHE_MONITOR=userfaultfd
 export FI_CXI_DEFAULT_CQ_SIZE=131072
+
