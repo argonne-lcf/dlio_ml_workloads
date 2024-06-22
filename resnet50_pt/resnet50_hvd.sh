@@ -1,15 +1,21 @@
 #!/bin/bash
 #PBS -l nodes=2:ncpus=4
 #PBS -l walltime=1:00:00
-#PBS -q debug-scaling
 #PBS -A datascience
-#PBS -l filesystems=home:grand:eagle
+#PBS -l filesystems=home:tegu
 
 cd $PBS_O_WORKDIR
-source /home/hzheng/PolarisAT/dlio_ml_workloads/setup_ml_env.sh
-export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
-#aprun -n 1 -N 1 --cc depth -e OMP_NUM_THREADS=64 -d 64 python resnet50_hvd.py --output_folder results/$TAG/n1.g1 --profile
-#aprun -n 4 -N 4 --cc depth -e OMP_NUM_THREADS=16 -d 16 python resnet50_hvd.py --output_folder results/$TAG/n1.g4 --profile
-aprun -n 8 -N 4 --cc depth -e OMP_NUM_THREADS=16 -d 16 python resnet50_hvd.py --output_folder results/$TAG/n2.g4 --multiprocessing_context='spawn'
-export TAG=$(date +"%Y-%m-%d-%H-%M-%S")
-aprun -n 8 -N 4 --cc depth -e OMP_NUM_THREADS=16 -d 16 python resnet50_hvd.py --output_folder results/$TAG/n2.g4 --multiprocessing_context='fork'
+export WORKDIR=$HOME/dlio_ml_workloads
+source ${WORKDIR}/setup_ml_env.sh
+
+export TORCH_PROFILER_ENABLE=1
+
+ID=$(echo $PBS_JOBID | cut -d "." -f 1)	 
+export TAG=$(date +"%Y-%m-%d-%H-%M-%S").$ID
+export PBS_JOBSIZE=$(cat $PBS_NODEFILE | uniq | wc -l)
+export PPN=${PPN:-4}
+export BATCH_SIZE=400
+export OUTPUT=results/n${PBS_JOBSIZE}.g${PPN}.b${BATCH_SIZE}/$TAG
+mkdir -p $OUTPUT
+
+mpiexec -np $((PBS_JOBSIZE*PPN)) --ppn ${PPN} --cpu-bind depth -d 16 python resnet50_hvd.py --batch-size ${BATCH_SIZE} --output-folder $OUTPUT  --dummy | tee -a $OUTPUT/output.log
