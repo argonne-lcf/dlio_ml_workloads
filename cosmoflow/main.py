@@ -224,7 +224,7 @@ class CosmoflowMain(PytorchApplication):
                                                    time=run_time.time_elapsed(),
                                                    epoch_num=epoch+1)
             self._distenv.global_barrier()
-            
+            self._metric.finalize()
             return run_status
         if os.getenv('TORCH_PROFILER_ENABLE')=="1":
             from torch.profiler import profile, record_function, ProfilerActivity

@@ -171,3 +171,4 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
               metadata={CONSTANTS.STATUS: CONSTANTS.SUCCESS if is_successful else CONSTANTS.ABORTED})
     for callback in callbacks:
         callback.on_fit_end()
+    train_metric.finalize()
