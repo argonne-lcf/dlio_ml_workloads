@@ -17,7 +17,7 @@ export PYTHONPATH=${WORKDIR}:$PYTHONPATH
 
 # Please change the following path accordingly 
 export ML_ENV=${WORKDIR}/soft/pyenvs/ml_workloads/$DATE_TAG
-export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${HWLOC_DIR}/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$WORKDIR/soft/boost/1.85.0/lib:$LD_LIBRARY_PATH
 if [[ -e $ML_ENV ]]; then
     export PYTHONPATH=$WORKDIR:$PYTHONPATH
@@ -58,16 +58,3 @@ else
     
     rm -rf /tmp/$USER/
 fi
-# INSTALL OTHER MISSING FILES
-export LD_LIBRARY_PATH=/soft/compilers/cudatoolkit/cuda-11.8.0/lib64/:$LD_LIBRARY_PATH
-
-#NCCL related libarary
-export NCCL_CROSS_NIC=1
-export NCCL_COLLNET_ENABLE=1
-export NCCL_NET="AWS Libfabric"
-export LD_LIBRARY_PATH=/soft/libraries/aws-ofi-nccl/v1.9.1-aws/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib/:$LD_LIBRARY_PATH
-export FI_CXI_DISABLE_HOST_REGISTER=1
-export FI_MR_CACHE_MONITOR=userfaultfd
-export FI_CXI_DEFAULT_CQ_SIZE=131072
-

@@ -28,6 +28,5 @@ else
     CC=cc CXX=CC MPICC=cc MPICXX=CC python setup.py install
     cd -
 fi
-# install 
 
 
