@@ -324,33 +324,35 @@ def main():
     optimizer = hvd.DistributedOptimizer(optimizer, named_parameters=model.named_parameters())
 
     scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
-    t0 = time.time()
-    if args.profile:
-        with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:    
-            for epoch in range(1, args.epochs + 1):
-                train_sampler.set_epoch(epoch)
-                train(train_loader, model, criterion, optimizer, epoch, device, args)
-                # test(model, device, val_loader)
-                scheduler.step()
-        prof.export_chrome_trace(f"{args.output_folder}/trace-{hvd.rank()}.json")
-    else:
+
+    def run():
+        t0 = time.time()        
         for epoch in range(1, args.epochs + 1):
             train_sampler.set_epoch(epoch)
             train(train_loader, model, criterion, optimizer, epoch, device, args)
             # test(model, device, val_loader)
             scheduler.step()
-        
-    if hvd.rank() == 0:
-        log.info(time.time()-t0)
+            prof.export_chrome_trace(f"{args.output_folder}/trace-{hvd.rank()}.json")
+            
+        if hvd.rank() == 0:
+            log.info(time.time()-t0)
         if args.save_model:
-            with Profile("checkpointing", name='IO'):
-            #with dlp_event_logging("IO", name="checkpointing") as compute:
+            with Profile("IO", name='checkpointing'):
                 torch.save(model.state_dict(), "resnet50.pt")
+        test(model, device, val_loader)
+        
+    if os.getenv("TORCH_PROFILER_ENABLE")=="1":
+        from torch.profiler import profile, record_function, ProfilerActivity
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]
+        with profile(activities=activities) as prof:
+            run()
+        prof.export_chrome_trace(
+            f"{args.output_folder}/torch-trace-{rank}-of-{size}.json"
+        )
+    else:
+        run()
     metric.finalize()
     pfwlogger.finalize()
-    #test(model, device, val_loader)
-    #log_inst.finalize()
-
 
 class Summary(Enum):
     NONE = 0
