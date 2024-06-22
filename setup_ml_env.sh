@@ -1,11 +1,13 @@
 #!/bin/bash -x
 # Define the workdir, please modify accordingly
-export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export WORKDIR=$SCRIPT_DIR
+
+# Get python setup
+source ${WORKDIR}/platforms/conda.sh
 
 # Base PYTHON environment
 export DATE_TAG=${DATE_TAG:-"2024-04-29"}
-module use /soft/modulefiles
-module load conda/$DATE_TAG
 
 # DLIO profiler
 export DLIO_PROFILER_ENABLE=1

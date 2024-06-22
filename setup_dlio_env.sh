@@ -1,10 +1,11 @@
 #!/bin/bash
 # modify this accordingly
-export WORKDIR=$HOME/dlio_ml_workloads/
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export WORKDIR=$SCRIPT_DIR
 
 # Base PYTHON environment
-DATE_TAG=2024-04-29
-module use /soft/modulefiles
+source $WORKDIR/platforms/conda.sh
+
 export VENV_HOME=${WORKDIR}/soft/pyenvs/dlio/$DATE_TAG
 
 export DLIO_PROFILER_ENABLE=1
