@@ -48,6 +48,12 @@ else
     ./install_boost.sh
     ./install_libaio.sh
     cd -
+
+    # install cosmoflow dependencies
+    cd ./cosmoflow
+    sh build_libCosmoflowExt.sh
+    cd -
+    
     rm -rf /tmp/$USER/
 fi
 # INSTALL OTHER MISSING FILES

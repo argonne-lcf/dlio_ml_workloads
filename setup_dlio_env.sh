@@ -1,6 +1,6 @@
 #!/bin/bash
 # modify this accordingly
-export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/
+export WORKDIR=$HOME/dlio_ml_workloads/
 
 # Base PYTHON environment
 DATE_TAG=2024-04-29

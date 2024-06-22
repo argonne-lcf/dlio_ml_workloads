@@ -46,20 +46,21 @@ parser.add_argument('--steps', type=int, default=100,
                     help='number of batches per benchmark iteration')
 parser.add_argument('--epochs', type=int, default=10,
                     help='number of benchmark iterations')
-parser.add_argument('--num_workers', type=int, default=4,
+parser.add_argument('--num-workers', type=int, default=4,
                     help='number of workers')
-parser.add_argument('--num_computation_threads', type=int, default=4,
+parser.add_argument('--num-computation-threads', type=int, default=4,
                     help='number of computation threads')                    
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='disables CUDA training')
-parser.add_argument('--data_folder', type=str, default="/eagle/datasets/ImageNet/tfrecords")                    
-parser.add_argument("--output_folder", default='outputs', type=str)
-parser.add_argument("--transfer_size", default=262144, type=int)
+parser.add_argument('--data-folder', type=str, default="/eagle/datasets/ImageNet/tfrecords")                    
+parser.add_argument("--output-folder", default='outputs', type=str)
+parser.add_argument("--transfer-size", default=262144, type=int)
 parser.add_argument("--datagen", default='synthetic')
 args = parser.parse_args()
 args.cuda = not args.no_cuda
 hvd.init()
-pfwlogger = PerfTrace.initialize_log(f"{args.output_folder}/trace-{hvd.rank()}-of-{hvd.size()}.pfw", os.path.abspath(args.data_folder), process_id=hvd.rank())    
+args.data_folder=os.path.abspath(args.data_folder)
+pfwlogger = PerfTrace.initialize_log(f"{args.output_folder}/trace-{hvd.rank()}-of-{hvd.size()}.pfw", args.data_folder, process_id=hvd.rank())    
 dlp = Profile("RESNET50")
 
 
@@ -132,14 +133,14 @@ def get_datagen():
         ds = ds.batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
     elif args.datagen=="tfrecord":
         @dlp.log
-        def pass_fun(x):
+        def parse_image(x):
             features = {
                 'image/class/label': tf.io.FixedLenFeature([], tf.int64),
                 'image/encoded': tf.io.FixedLenFeature([], tf.string),
                 'image/class/text':tf.io.FixedLenFeature([], tf.string)
             }
-            parsed = tf.io.parse_single_example(x, features)
-            image = tf.io.decode_jpeg(parsed["image/encoded"], channels=3)
+            parsed = tf.io.parse_example(x, features)
+            image = tf.io.decode_jpeg(parsed["image/encoded"])
             image = tf.cast(image, tf.float32)
             image = tf.image.resize(image, [224, 224])
             image = tf.image.random_flip_left_right(image)
@@ -147,11 +148,14 @@ def get_datagen():
             name = parsed['image/class/text']
             lab = parsed["image/class/label"]
             return image, lab
-        file_names = glob.glob(f"{args.data_folder}/*")        
-        ds = tf.data.TFRecordDataset(filenames=file_names, buffer_size=args.transfer_size, num_parallel_reads=args.num_workers)
-        ds = ds.shard(num_shards=hvd.size(), index=hvd.rank())
-        ds = ds.batch(args.batch_size).prefetch(tf.data.AUTOTUNE)
-        ds = ds.map(pass_fun, num_parallel_calls = args.num_computation_threads)        
+        file_names = glob.glob(f"{args.data_folder}/train-*")
+        if hvd.rank()==0:
+            log.info(f"{len(file_names)} found in {args.data_folder}")
+        ds = tf.data.TFRecordDataset(filenames=file_names[hvd.rank()::hvd.size()], buffer_size=args.transfer_size, num_parallel_reads=args.num_workers)
+        ds = ds.map(parse_image, num_parallel_calls = args.num_computation_threads)        
+        ds = ds.batch(args.batch_size, drop_remainder=True).prefetch(tf.data.AUTOTUNE)
+
+        
     else:
         x = np.random.random((4000, 224, 224, 3))
         y = np.random.random((4000, 1))
@@ -165,15 +169,16 @@ def benchmark_step(a, b, first_batch):
     # Horovod: (optional) compression algorithm.
     compression = hvd.Compression.fp16 if args.fp16_allreduce else hvd.Compression.none
     # Horovod: use DistributedGradientTape
-    with tf.GradientTape() as tape:
-        probs = model(a, training=True)
-        loss = tf.losses.sparse_categorical_crossentropy(b, probs)
+    with Profile("compute", name='forward'):
+        with tf.GradientTape() as tape:
+            probs = model(a, training=True)
+            loss = tf.losses.sparse_categorical_crossentropy(b, probs)
+    with Profile("compute", name="backward"):
+        # Horovod: add Horovod Distributed GradientTape.
+        tape = hvd.DistributedGradientTape(tape, compression=compression)
 
-    # Horovod: add Horovod Distributed GradientTape.
-    tape = hvd.DistributedGradientTape(tape, compression=compression)
-
-    gradients = tape.gradient(loss, model.trainable_variables)
-    opt.apply_gradients(zip(gradients, model.trainable_variables))
+        gradients = tape.gradient(loss, model.trainable_variables)
+        opt.apply_gradients(zip(gradients, model.trainable_variables))
 
     # Horovod: broadcast initial variable states from rank 0 to all other processes.
     # This is necessary to ensure consistent initialization of all workers when
@@ -208,8 +213,7 @@ with tf.device(device):
     if hvd.rank() == 0:
         log.info('Running warmup...')
     for a, b in ds.take(1):
-        #benchmark_step(a, b, first_batch=True)
-        benchmark_step(a, b, first_batch=False)
+        benchmark_step(a, b, first_batch=True)
     # Benchmark
     if hvd.rank()==0:
         log.info('Running benchmark...')
@@ -222,8 +226,7 @@ with tf.device(device):
         for a, b in ds.take(args.steps):
             metric.end_loading(step)        
             metric.start_compute(step)
-            with Profile(name="compute", cat='train'):
-                benchmark_step(a, b, first_batch=False)
+            benchmark_step(a, b, first_batch=False)
             metric.end_compute(step)
             step += 1
             metric.start_loading(step)            
@@ -240,4 +243,5 @@ with tf.device(device):
         log.info('Img/sec per %s: %.1f +-%.1f' % (device, img_sec_mean, img_sec_conf))
         log.info('Total img/sec on %d %s(s): %.1f +-%.1f' %
             (hvd.size(), device, hvd.size() * img_sec_mean, hvd.size() * img_sec_conf))
+metric.finalize()        
 pfwlogger.finalize()
