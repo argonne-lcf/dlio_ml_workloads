@@ -19,3 +19,5 @@ export OUTPUT=results/n${PBS_JOBSIZE}.g${PPN}.b${BATCH_SIZE}/$TAG
 mkdir -p $OUTPUT
 
 mpiexec -np $((PBS_JOBSIZE*PPN)) --ppn ${PPN} --cpu-bind depth -d 16 python resnet50_ddp.py --batch-size ${BATCH_SIZE} --output-folder $OUTPUT  --dummy | tee -a $OUTPUT/output.log
+nvidia-smi > $OUTPUT/gpu.info
+env > $OUTPUT/env.dat

@@ -28,5 +28,4 @@ export NPROC=$((PBS_JOBSIZE*PPN))
 BATCH_SIZE=${BATCH_SIZE} DATA_DIR=${DATA_TOP}/datax$NPROC NUM_WOKRERS=${NUM_WORKERS} OUTPUT_DIR=${OUTPUT} NPROC=$((PBS_JOBSIZE*PPN)) PPN=${PPN} ./run_polaris.sh | tee -a ${OUTPUT}/output.log
 nvidia-smi > $OUTPUT/gpu.info
 env >& $OUTPUT/env.dat
-mv summary.json ${OUTPUT}/
 cp $0.o$ID $0.e$ID ${OUTPUT}/
