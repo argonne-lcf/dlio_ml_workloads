@@ -1,0 +1,20 @@
+diff --git a/src/dlio_profiler/core/dlio_profiler_main.cpp b/src/dlio_profiler/core/dlio_profiler_main.cpp
+index 1b2b2dc..2d01f3b 100644
+--- a/src/dlio_profiler/core/dlio_profiler_main.cpp
++++ b/src/dlio_profiler/core/dlio_profiler_main.cpp
+@@ -156,7 +156,7 @@ dlio_profiler::DLIOProfilerCore::initialize(bool _bind, const char *_log_file, c
+       if (bind) {
+         if (conf->io) {
+           auto trie = dlio_profiler::Singleton<Trie>::get_instance();
+-          const char* ignore_extensions[2] = {"pfw", "py"};
++          const char* ignore_extensions[2] = {".pfw", ".py", ".pfw.gz"};
+           const char* ignore_prefix[8] = {"/pipe", "/socket", "/proc",
+                                           "/sys", "/collab",
+                                           "anon_inode", "socket", "/var/tmp"};
+@@ -214,4 +214,4 @@ TimeResolution dlio_profiler::DLIOProfilerCore::get_time() {
+     DLIO_PROFILER_LOGDEBUG("DLIOProfilerCore::get_time logger not initialized","");
+   }
+   return -1;
+-}
+\ No newline at end of file
++}

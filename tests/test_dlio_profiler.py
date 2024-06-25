@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import dlio_profiler
 from dlio_profiler.logger import fn_interceptor as Profile
 from dlio_profiler.logger import dlio_logger as PerfTrace
 import argparse
@@ -22,8 +23,7 @@ os.makedirs(f"{args.log_dir}/{args.format}", exist_ok=True)
 os.makedirs(f"{args.data_dir}/{args.format}", exist_ok=True)
 dlp = Profile("dlio")
 
-PerfTrace.initialize_log(f"{args.log_dir}/{args.format}", 
-                         f"{args.data_dir}")
+PerfTrace.initialize_log(f"{args.log_dir}/{args.format}/trace.pfw",  f"{args.data_dir}", process_id=0)
 #f"{args.data_dir}/{args.format}")
 from PIL import Image
 import cv2

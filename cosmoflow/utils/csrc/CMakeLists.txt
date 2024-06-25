@@ -29,10 +29,10 @@ add_library(CosmoflowExt SHARED
 set_property(TARGET CosmoflowExt PROPERTY CXX_STANDARD 20)
 target_link_libraries(CosmoflowExt
     Python::Module
-    Python::NumPy
-    Boost::python
-    Boost::numpy
-    Boost::iostreams
+    boost_numpy311
+    boost_python311
+    boost_numpy311
+    boost_iostreams
     aio)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall -Wextra")

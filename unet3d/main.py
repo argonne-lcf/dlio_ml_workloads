@@ -77,22 +77,33 @@ def main():
                          include_background=flags.include_background)
     score_fn = DiceScore(to_onehot_y=True, use_argmax=True, layout=flags.layout,
                          include_background=flags.include_background)
-    t0 = time.time()
-    if flags.exec_mode == 'train':
-        train(flags, model, train_dataloader, val_dataloader, loss_fn, score_fn,
-              device=device, callbacks=callbacks, is_distributed=is_distributed, sleep=flags.sleep)
-    t1 = time.time()
-    if local_rank == 0:
-        print("Total training time: %10.8f [s]"%(t1 - t0))
-    elif flags.exec_mode == 'evaluate':
-        eval_metrics = evaluate(flags, model, val_dataloader, loss_fn, score_fn,
-                                device=device, is_distributed=is_distributed)
-        if local_rank == 0:
-            for key in eval_metrics.keys():
-                print(key, eval_metrics[key])
+    def run():
+        if flags.exec_mode == 'train':
+            t0 = time.time()        
+            train(flags, model, train_dataloader, val_dataloader, loss_fn, score_fn,
+                  device=device, callbacks=callbacks, is_distributed=is_distributed, sleep=flags.sleep)
+            t1 = time.time()
+            if local_rank == 0:
+                print("Total training time: %10.8f [s]"%(t1 - t0))
+        elif flags.exec_mode == 'evaluate':
+            eval_metrics = evaluate(flags, model, val_dataloader, loss_fn, score_fn,
+                                    device=device, is_distributed=is_distributed)
+            if local_rank == 0:
+                for key in eval_metrics.keys():
+                    print(key, eval_metrics[key])
+        else:
+            print("Invalid exec_mode.")
+            pass
+    if os.getenv('TORCH_PROFILER_ENABLE')=="1":
+        from torch.profiler import profile, record_function, ProfilerActivity
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]
+        with profile(activities=activities) as prof:
+            run()
+        prof.export_chrome_trace(
+            f"{flags.output_dir}/torch-trace-{comm.rank}-of-{comm.size}.json"
+        )
     else:
-        print("Invalid exec_mode.")
-        pass
+        run()
     pfwlogger.finalize()
 
 if __name__ == '__main__':

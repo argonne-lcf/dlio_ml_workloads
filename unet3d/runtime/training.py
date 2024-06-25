@@ -94,9 +94,9 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
             image, label = batch
             train_metric.end_loading(iteration)
             train_metric.start_compute(iteration)
-            with Profile(cat="train", name="H2D"):
+            with Profile("data", name="H2D"):
                 image, label = image.to(device), label.to(device)
-            with Profile(cat="train", name="compute-forward"):
+            with Profile("compute", name="forward"):
                 for callback in callbacks:
                     callback.on_batch_start()
                 if (sleep >= 0):
@@ -107,7 +107,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
                     output = model(image)
                     loss_value = loss_fn(output, label)
                     loss_value /= flags.ga_steps
-            with Profile(cat="train", name="compute-backward"):
+            with Profile("compute", name="backward"):
                 if flags.amp:
                     scaler.scale(loss_value).backward()
                 else:
@@ -121,7 +121,7 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
                         optimizer.step()
 
                     optimizer.zero_grad()
-            with Profile(cat="train", name="communication-reduce_tensor"):
+            with Profile("train", name="communication-reduce_tensor"):
                 if (not skip_reduce):
                     loss_value = reduce_tensor(loss_value, world_size).detach().cpu().numpy()
                     cumulative_loss.append(loss_value)                    
@@ -171,3 +171,4 @@ def train(flags, model, train_loader, val_loader, loss_fn, score_fn, device, cal
               metadata={CONSTANTS.STATUS: CONSTANTS.SUCCESS if is_successful else CONSTANTS.ABORTED})
     for callback in callbacks:
         callback.on_fit_end()
+    train_metric.finalize()

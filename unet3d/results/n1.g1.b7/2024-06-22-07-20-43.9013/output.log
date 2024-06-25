@@ -1,0 +1,252 @@
+               total        used        free      shared  buff/cache   available
+Mem:           503Gi        24Gi       302Gi       4.6Gi       183Gi       478Gi
+Swap:             0B          0B          0B
+STARTING TIMING RUN AT 2024-06-22 07:22:02 AM
+Number of data loader workers: 4
+:::MLLOG {"namespace": "", "time_ms": 1719040924516, "event_type": "POINT_IN_TIME", "key": "cache_clear", "value": true, "metadata": {"file": "<string>", "lineno": 4}}
+I am 0 of 1: 0 on x3200c0s13b1n0 - MASTER_ADDR=x3200c0s13b1n0
+I am rank 0 of 1
+skip_reduce
+:::MLLOG {"namespace": "", "time_ms": 1719040931208, "event_type": "INTERVAL_START", "key": "init_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 45}}
+Distributed initialized. World size: 1
+Using random master seed: 1984619524
+:::MLLOG {"namespace": "", "time_ms": 1719040932687, "event_type": "POINT_IN_TIME", "key": "seed", "value": 941547828, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 54}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932691, "event_type": "POINT_IN_TIME", "key": "submission_benchmark", "value": "unet3d", "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 61}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932692, "event_type": "POINT_IN_TIME", "key": "submission_org", "value": "your-company", "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 66}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932692, "event_type": "POINT_IN_TIME", "key": "submission_division", "value": "closed", "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 70}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932692, "event_type": "POINT_IN_TIME", "key": "submission_status", "value": "onprem", "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 74}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932692, "event_type": "POINT_IN_TIME", "key": "submission_platform", "value": "your_platform", "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 78}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932693, "event_type": "POINT_IN_TIME", "key": "opt_name", "value": "sgd", "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 84}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932693, "event_type": "POINT_IN_TIME", "key": "opt_base_learning_rate", "value": 0.8, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 85}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932693, "event_type": "POINT_IN_TIME", "key": "opt_learning_rate_warmup_epochs", "value": 200, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 86}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932693, "event_type": "POINT_IN_TIME", "key": "opt_learning_rate_decay_boundary_epochs", "value": [], "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 88}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932693, "event_type": "POINT_IN_TIME", "key": "opt_learning_rate_decay_factor", "value": 1.0, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 89}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932693, "event_type": "POINT_IN_TIME", "key": "opt_weight_decay", "value": 0.0, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 90}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932694, "event_type": "POINT_IN_TIME", "key": "opt_momentum", "value": 0.9, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 91}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932694, "event_type": "POINT_IN_TIME", "key": "oversampling", "value": 0.4, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 92}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932694, "event_type": "POINT_IN_TIME", "key": "training_input_shape", "value": [128, 128, 128], "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 93}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932694, "event_type": "POINT_IN_TIME", "key": "validation_input_shape", "value": [128, 128, 128], "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 94}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932694, "event_type": "POINT_IN_TIME", "key": "validation_overlap", "value": 0.5, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/logging.py", "lineno": 95}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932715, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "input_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932716, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "input_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932716, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "input_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932717, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "input_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932717, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down0_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932717, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down0_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932718, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down0_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932719, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down0_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932720, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down1_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932720, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down1_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932722, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down1_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932722, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down1_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932727, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down2_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932727, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down2_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932734, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down2_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932734, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down2_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932743, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down3_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932743, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down3_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932754, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down3_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932754, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down3_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932764, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down4_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932765, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down4_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932775, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "down4_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932776, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "down4_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932779, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up0_deconv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932800, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up0_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932800, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up0_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932810, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up0_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932810, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up0_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932813, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up1_deconv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932826, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up1_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932827, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up1_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932833, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up1_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932834, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up1_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932835, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up2_deconv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932839, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up2_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932839, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up2_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932842, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up2_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932842, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up2_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932843, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up3_deconv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932844, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up3_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932844, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up3_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932845, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up3_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932845, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up3_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932846, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up4_deconv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932846, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up4_block_0_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932847, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up4_block_0_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932847, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 46, "tensor": "up4_block_1_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932847, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 49, "tensor": "up4_block_1_instancenorm"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932848, "event_type": "POINT_IN_TIME", "key": "weights_initialization", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/model/layers.py", "lineno": 109, "tensor": "output_conv"}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932855, "event_type": "INTERVAL_END", "key": "init_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 65}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932855, "event_type": "INTERVAL_START", "key": "run_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 66}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932861, "event_type": "POINT_IN_TIME", "key": "train_samples", "value": 168, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/data_loading/data_loader.py", "lineno": 52}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932861, "event_type": "POINT_IN_TIME", "key": "eval_samples", "value": 42, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/data_loading/data_loader.py", "lineno": 53}}
+world_size: 1; local_rank: 0
+:::MLLOG {"namespace": "", "time_ms": 1719040932862, "event_type": "POINT_IN_TIME", "key": "samples_per_epoch", "value": 168, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 70}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932862, "event_type": "POINT_IN_TIME", "key": "global_batch_size", "value": 7, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 74}}
+:::MLLOG {"namespace": "", "time_ms": 1719040932863, "event_type": "POINT_IN_TIME", "key": "gradient_accumulation_steps", "value": 1, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/main.py", "lineno": 75}}
+:::MLLOG {"namespace": "", "time_ms": 1719040933086, "event_type": "INTERVAL_START", "key": "block_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 82, "first_epoch_num": 1, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719040933087, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 84, "epoch_num": 1}}
+[METRIC] [2024-06-22T07:22:18.826982] Step 0 Rank 0 processed 7 samples in 5.7393 seconds
+[METRIC] [2024-06-22T07:22:21.417021] Step 1 Rank 0 processed 7 samples in 2.5899 seconds
+[METRIC] [2024-06-22T07:22:21.430979] Step 2 Rank 0 processed 7 samples in 0.0139 seconds
+[METRIC] [2024-06-22T07:22:22.004188] Step 3 Rank 0 processed 7 samples in 0.5732 seconds
+[METRIC] [2024-06-22T07:22:28.070970] Step 4 Rank 0 processed 7 samples in 6.0667 seconds
+[METRIC] [2024-06-22T07:22:28.665945] Step 5 Rank 0 processed 7 samples in 0.5949 seconds
+[METRIC] [2024-06-22T07:22:29.241470] Step 6 Rank 0 processed 7 samples in 0.5755 seconds
+[METRIC] [2024-06-22T07:22:29.815389] Step 7 Rank 0 processed 7 samples in 0.5738 seconds
+[METRIC] [2024-06-22T07:22:34.688170] Step 8 Rank 0 processed 7 samples in 4.8727 seconds
+[METRIC] [2024-06-22T07:22:35.287135] Step 9 Rank 0 processed 7 samples in 0.5989 seconds
+[METRIC] [2024-06-22T07:22:35.862453] Step 10 Rank 0 processed 7 samples in 0.5753 seconds
+[METRIC] [2024-06-22T07:22:36.438264] Step 11 Rank 0 processed 7 samples in 0.5757 seconds
+[METRIC] [2024-06-22T07:22:40.229185] Step 12 Rank 0 processed 7 samples in 3.7909 seconds
+[METRIC] [2024-06-22T07:22:40.840559] Step 13 Rank 0 processed 7 samples in 0.6113 seconds
+[METRIC] [2024-06-22T07:22:41.416816] Step 14 Rank 0 processed 7 samples in 0.5762 seconds
+[METRIC] [2024-06-22T07:22:41.990773] Step 15 Rank 0 processed 7 samples in 0.5739 seconds
+[METRIC] [2024-06-22T07:22:48.868458] Step 16 Rank 0 processed 7 samples in 6.8776 seconds
+[METRIC] [2024-06-22T07:22:49.463759] Step 17 Rank 0 processed 7 samples in 0.5952 seconds
+[METRIC] [2024-06-22T07:22:50.039821] Step 18 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:22:50.615025] Step 19 Rank 0 processed 7 samples in 0.5752 seconds
+[METRIC] [2024-06-22T07:22:51.907380] Step 20 Rank 0 processed 7 samples in 1.2923 seconds
+[METRIC] [2024-06-22T07:22:52.485508] Step 21 Rank 0 processed 7 samples in 0.5781 seconds
+[METRIC] [2024-06-22T07:22:53.059412] Step 22 Rank 0 processed 7 samples in 0.5739 seconds
+[METRIC] [2024-06-22T07:22:53.633529] Step 23 Rank 0 processed 7 samples in 0.5741 seconds
+:::MLLOG {"namespace": "", "time_ms": 1719040973655, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 133, "epoch_num": 1, "current_lr": 0.004099500000000001}}
+[METRIC] [2024-06-22T07:22:53.669363] Finished epoch 0
+[METRIC] AU[0] (%): 24.6368
+[METRIC] Throughput (samples/second): 3.9095
+[METRIC] Compute time per step (s): 0.4411 (0.2465)
+:::MLLOG {"namespace": "", "time_ms": 1719040973669, "event_type": "INTERVAL_END", "key": "block_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 164, "first_epoch_num": 1, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719040973670, "event_type": "INTERVAL_START", "key": "block_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 82, "first_epoch_num": 2, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719040973670, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 84, "epoch_num": 2}}
+[METRIC] [2024-06-22T07:22:54.261352] Step 0 Rank 0 processed 7 samples in 0.5905 seconds
+[METRIC] [2024-06-22T07:22:54.829654] Step 1 Rank 0 processed 7 samples in 0.5682 seconds
+[METRIC] [2024-06-22T07:22:55.404135] Step 2 Rank 0 processed 7 samples in 0.5744 seconds
+[METRIC] [2024-06-22T07:22:55.979063] Step 3 Rank 0 processed 7 samples in 0.5749 seconds
+[METRIC] [2024-06-22T07:22:56.553262] Step 4 Rank 0 processed 7 samples in 0.5742 seconds
+[METRIC] [2024-06-22T07:22:57.128298] Step 5 Rank 0 processed 7 samples in 0.5750 seconds
+[METRIC] [2024-06-22T07:22:57.702661] Step 6 Rank 0 processed 7 samples in 0.5743 seconds
+[METRIC] [2024-06-22T07:22:58.278129] Step 7 Rank 0 processed 7 samples in 0.5754 seconds
+[METRIC] [2024-06-22T07:22:58.852563] Step 8 Rank 0 processed 7 samples in 0.5744 seconds
+[METRIC] [2024-06-22T07:22:59.427951] Step 9 Rank 0 processed 7 samples in 0.5753 seconds
+[METRIC] [2024-06-22T07:23:00.002975] Step 10 Rank 0 processed 7 samples in 0.5750 seconds
+[METRIC] [2024-06-22T07:23:00.578812] Step 11 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:01.153453] Step 12 Rank 0 processed 7 samples in 0.5746 seconds
+[METRIC] [2024-06-22T07:23:01.728204] Step 13 Rank 0 processed 7 samples in 0.5747 seconds
+[METRIC] [2024-06-22T07:23:02.304116] Step 14 Rank 0 processed 7 samples in 0.5759 seconds
+[METRIC] [2024-06-22T07:23:02.878125] Step 15 Rank 0 processed 7 samples in 0.5740 seconds
+[METRIC] [2024-06-22T07:23:03.452860] Step 16 Rank 0 processed 7 samples in 0.5747 seconds
+[METRIC] [2024-06-22T07:23:04.030889] Step 17 Rank 0 processed 7 samples in 0.5780 seconds
+[METRIC] [2024-06-22T07:23:04.605058] Step 18 Rank 0 processed 7 samples in 0.5741 seconds
+[METRIC] [2024-06-22T07:23:05.180531] Step 19 Rank 0 processed 7 samples in 0.5754 seconds
+[METRIC] [2024-06-22T07:23:05.755762] Step 20 Rank 0 processed 7 samples in 0.5752 seconds
+[METRIC] [2024-06-22T07:23:06.334887] Step 21 Rank 0 processed 7 samples in 0.5791 seconds
+[METRIC] [2024-06-22T07:23:06.909231] Step 22 Rank 0 processed 7 samples in 0.5743 seconds
+[METRIC] [2024-06-22T07:23:07.489333] Step 23 Rank 0 processed 7 samples in 0.5801 seconds
+:::MLLOG {"namespace": "", "time_ms": 1719040987526, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 133, "epoch_num": 2, "current_lr": 0.008099}}
+[METRIC] [2024-06-22T07:23:07.555297] Finished epoch 1
+[METRIC] AU[1] (%): 99.2459
+[METRIC] Throughput (samples/second): 12.0842
+[METRIC] Compute time per step (s): 0.5749 (0.0010)
+:::MLLOG {"namespace": "", "time_ms": 1719040987555, "event_type": "INTERVAL_END", "key": "block_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 164, "first_epoch_num": 2, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719040987555, "event_type": "INTERVAL_START", "key": "block_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 82, "first_epoch_num": 3, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719040987556, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 84, "epoch_num": 3}}
+[METRIC] [2024-06-22T07:23:10.240333] Step 0 Rank 0 processed 7 samples in 2.6840 seconds
+[METRIC] [2024-06-22T07:23:10.824367] Step 1 Rank 0 processed 7 samples in 0.5839 seconds
+[METRIC] [2024-06-22T07:23:11.398274] Step 2 Rank 0 processed 7 samples in 0.5738 seconds
+[METRIC] [2024-06-22T07:23:11.973649] Step 3 Rank 0 processed 7 samples in 0.5753 seconds
+[METRIC] [2024-06-22T07:23:12.548522] Step 4 Rank 0 processed 7 samples in 0.5748 seconds
+[METRIC] [2024-06-22T07:23:13.124219] Step 5 Rank 0 processed 7 samples in 0.5757 seconds
+[METRIC] [2024-06-22T07:23:13.699677] Step 6 Rank 0 processed 7 samples in 0.5754 seconds
+[METRIC] [2024-06-22T07:23:14.273968] Step 7 Rank 0 processed 7 samples in 0.5742 seconds
+[METRIC] [2024-06-22T07:23:14.851038] Step 8 Rank 0 processed 7 samples in 0.5770 seconds
+[METRIC] [2024-06-22T07:23:15.424883] Step 9 Rank 0 processed 7 samples in 0.5738 seconds
+[METRIC] [2024-06-22T07:23:16.000212] Step 10 Rank 0 processed 7 samples in 0.5753 seconds
+[METRIC] [2024-06-22T07:23:16.598669] Step 11 Rank 0 processed 7 samples in 0.5984 seconds
+[METRIC] [2024-06-22T07:23:17.175176] Step 12 Rank 0 processed 7 samples in 0.5765 seconds
+[METRIC] [2024-06-22T07:23:17.751230] Step 13 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:23:18.326341] Step 14 Rank 0 processed 7 samples in 0.5751 seconds
+[METRIC] [2024-06-22T07:23:18.902229] Step 15 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:19.478055] Step 16 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:20.053904] Step 17 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:20.629758] Step 18 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:21.205585] Step 19 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:21.781421] Step 20 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:22.356489] Step 21 Rank 0 processed 7 samples in 0.5750 seconds
+[METRIC] [2024-06-22T07:23:22.932591] Step 22 Rank 0 processed 7 samples in 0.5761 seconds
+[METRIC] [2024-06-22T07:23:23.507827] Step 23 Rank 0 processed 7 samples in 0.5752 seconds
+:::MLLOG {"namespace": "", "time_ms": 1719041003543, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 133, "epoch_num": 3, "current_lr": 0.0120985}}
+[METRIC] [2024-06-22T07:23:23.544728] Finished epoch 2
+[METRIC] AU[2] (%): 99.5559
+[METRIC] Throughput (samples/second): 12.0824
+[METRIC] Compute time per step (s): 0.5768 (0.0056)
+:::MLLOG {"namespace": "", "time_ms": 1719041003544, "event_type": "INTERVAL_END", "key": "block_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 164, "first_epoch_num": 3, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719041003545, "event_type": "INTERVAL_START", "key": "block_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 82, "first_epoch_num": 4, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719041003545, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 84, "epoch_num": 4}}
+[METRIC] [2024-06-22T07:23:24.744899] Step 0 Rank 0 processed 7 samples in 1.1992 seconds
+[METRIC] [2024-06-22T07:23:25.314580] Step 1 Rank 0 processed 7 samples in 0.5696 seconds
+[METRIC] [2024-06-22T07:23:25.890268] Step 2 Rank 0 processed 7 samples in 0.5756 seconds
+[METRIC] [2024-06-22T07:23:26.463547] Step 3 Rank 0 processed 7 samples in 0.5732 seconds
+[METRIC] [2024-06-22T07:23:27.088444] Step 4 Rank 0 processed 7 samples in 0.6249 seconds
+[METRIC] [2024-06-22T07:23:28.200571] Step 5 Rank 0 processed 7 samples in 1.1121 seconds
+[METRIC] [2024-06-22T07:23:29.017444] Step 6 Rank 0 processed 7 samples in 0.8168 seconds
+[METRIC] [2024-06-22T07:23:29.379918] Step 7 Rank 0 processed 7 samples in 0.3624 seconds
+[METRIC] [2024-06-22T07:23:29.955348] Step 8 Rank 0 processed 7 samples in 0.5754 seconds
+[METRIC] [2024-06-22T07:23:30.529384] Step 9 Rank 0 processed 7 samples in 0.5740 seconds
+[METRIC] [2024-06-22T07:23:31.105016] Step 10 Rank 0 processed 7 samples in 0.5756 seconds
+[METRIC] [2024-06-22T07:23:31.679666] Step 11 Rank 0 processed 7 samples in 0.5746 seconds
+[METRIC] [2024-06-22T07:23:32.255962] Step 12 Rank 0 processed 7 samples in 0.5763 seconds
+[METRIC] [2024-06-22T07:23:32.830947] Step 13 Rank 0 processed 7 samples in 0.5749 seconds
+[METRIC] [2024-06-22T07:23:33.411643] Step 14 Rank 0 processed 7 samples in 0.5807 seconds
+[METRIC] [2024-06-22T07:23:33.988150] Step 15 Rank 0 processed 7 samples in 0.5765 seconds
+[METRIC] [2024-06-22T07:23:34.563653] Step 16 Rank 0 processed 7 samples in 0.5755 seconds
+[METRIC] [2024-06-22T07:23:35.139765] Step 17 Rank 0 processed 7 samples in 0.5761 seconds
+[METRIC] [2024-06-22T07:23:35.714050] Step 18 Rank 0 processed 7 samples in 0.5742 seconds
+[METRIC] [2024-06-22T07:23:36.290296] Step 19 Rank 0 processed 7 samples in 0.5762 seconds
+[METRIC] [2024-06-22T07:23:36.865531] Step 20 Rank 0 processed 7 samples in 0.5752 seconds
+[METRIC] [2024-06-22T07:23:37.440694] Step 21 Rank 0 processed 7 samples in 0.5751 seconds
+[METRIC] [2024-06-22T07:23:38.016341] Step 22 Rank 0 processed 7 samples in 0.5756 seconds
+[METRIC] [2024-06-22T07:23:38.592549] Step 23 Rank 0 processed 7 samples in 0.5762 seconds
+:::MLLOG {"namespace": "", "time_ms": 1719041018619, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 133, "epoch_num": 4, "current_lr": 0.016098}}
+[METRIC] [2024-06-22T07:23:38.620741] Finished epoch 3
+[METRIC] AU[3] (%): 94.8115
+[METRIC] Throughput (samples/second): 11.3639
+[METRIC] Compute time per step (s): 0.5840 (0.1509)
+:::MLLOG {"namespace": "", "time_ms": 1719041018620, "event_type": "INTERVAL_END", "key": "block_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 164, "first_epoch_num": 4, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719041018621, "event_type": "INTERVAL_START", "key": "block_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 82, "first_epoch_num": 5, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719041018621, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 84, "epoch_num": 5}}
+[METRIC] [2024-06-22T07:23:39.377388] Step 0 Rank 0 processed 7 samples in 0.7555 seconds
+[METRIC] [2024-06-22T07:23:39.949879] Step 1 Rank 0 processed 7 samples in 0.5724 seconds
+[METRIC] [2024-06-22T07:23:40.528051] Step 2 Rank 0 processed 7 samples in 0.5781 seconds
+[METRIC] [2024-06-22T07:23:41.103267] Step 3 Rank 0 processed 7 samples in 0.5751 seconds
+[METRIC] [2024-06-22T07:23:41.677682] Step 4 Rank 0 processed 7 samples in 0.5744 seconds
+[METRIC] [2024-06-22T07:23:42.253725] Step 5 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:23:42.829558] Step 6 Rank 0 processed 7 samples in 0.5758 seconds
+[METRIC] [2024-06-22T07:23:43.405698] Step 7 Rank 0 processed 7 samples in 0.5761 seconds
+[METRIC] [2024-06-22T07:23:43.982566] Step 8 Rank 0 processed 7 samples in 0.5768 seconds
+[METRIC] [2024-06-22T07:23:44.558958] Step 9 Rank 0 processed 7 samples in 0.5764 seconds
+[METRIC] [2024-06-22T07:23:45.135005] Step 10 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:23:45.711218] Step 11 Rank 0 processed 7 samples in 0.5762 seconds
+[METRIC] [2024-06-22T07:23:46.288162] Step 12 Rank 0 processed 7 samples in 0.5769 seconds
+[METRIC] [2024-06-22T07:23:46.864112] Step 13 Rank 0 processed 7 samples in 0.5759 seconds
+[METRIC] [2024-06-22T07:23:47.439771] Step 14 Rank 0 processed 7 samples in 0.5756 seconds
+[METRIC] [2024-06-22T07:23:48.016523] Step 15 Rank 0 processed 7 samples in 0.5767 seconds
+[METRIC] [2024-06-22T07:23:48.592588] Step 16 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:23:49.170576] Step 17 Rank 0 processed 7 samples in 0.5780 seconds
+[METRIC] [2024-06-22T07:23:49.746603] Step 18 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:23:50.323770] Step 19 Rank 0 processed 7 samples in 0.5771 seconds
+[METRIC] [2024-06-22T07:23:50.898946] Step 20 Rank 0 processed 7 samples in 0.5751 seconds
+[METRIC] [2024-06-22T07:23:51.476020] Step 21 Rank 0 processed 7 samples in 0.5770 seconds
+[METRIC] [2024-06-22T07:23:52.052077] Step 22 Rank 0 processed 7 samples in 0.5760 seconds
+[METRIC] [2024-06-22T07:23:52.628055] Step 23 Rank 0 processed 7 samples in 0.5759 seconds
+:::MLLOG {"namespace": "", "time_ms": 1719041032653, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 133, "epoch_num": 5, "current_lr": 0.0200975}}
+[METRIC] [2024-06-22T07:23:52.654683] Finished epoch 4
+[METRIC] AU[4] (%): 99.6699
+[METRIC] Throughput (samples/second): 12.1106
+[METRIC] Compute time per step (s): 0.5761 (0.0008)
+:::MLLOG {"namespace": "", "time_ms": 1719041032654, "event_type": "INTERVAL_END", "key": "block_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 164, "first_epoch_num": 5, "epoch_count": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1719041032655, "event_type": "INTERVAL_END", "key": "run_stop", "value": null, "metadata": {"file": "/lus/tegu/projects/PolarisAT/hzheng/dlio_ml_workloads/unet3d/runtime/training.py", "lineno": 170, "status": "aborted"}}
+DLL 2024-06-22 07:23:52.655480 - () last_epoch : 0  first_conv_ep : 0  seed : -1  total_time : 1.6594815333684285 
+Total training time: 99.79265285 [s]
+ENDING TIMING RUN AT 2024-06-22 07:23:54 AM
+RESULT,image_segmentation,-1,112,hzheng,2024-06-22 07:22:02 AM

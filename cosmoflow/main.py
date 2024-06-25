@@ -55,7 +55,7 @@ class CosmoflowMain(PytorchApplication):
         except:
             hydra_cfg = hydra.core.hydra_config.HydraConfig.get()
             pfw_logdir = hydra_cfg['runtime']['output_dir']            
-
+        self.pfw_logdir = pfw_logdir
         _PFW_LOGGER = PerfTrace.initialize_log(f"{pfw_logdir}/trace-{self._distenv.rank}-of-{self._distenv.size}.pfw", os.path.abspath(data_folder), process_id = self._distenv.rank)
 
         with utils.ProfilerSection("initialization", profile=self._config["profile"]):
@@ -189,42 +189,53 @@ class CosmoflowMain(PytorchApplication):
 
         self._distenv.global_barrier()
         utils.logger.mllogger.log_init_stop_run_start()
-
-        run_status = None
-        with utils.ExecutionTimer(name="run_time", profile=self._config["profile"]) as run_time:
-            train_iterator = iter(self._training_pipeline)
-            val_iterator = iter(self._validation_pipeline)
-
-            for epoch in range(model_cfg["training"]["train_epochs"] * 10):
-                last_score = self._trainer.epoch_step(
-                    train_iterator, val_iterator, epoch, eval_only=eval_only)
-
-                if last_score <= model_cfg["training"]["target_score"]:
-                    run_status = "success"
-                    
-                    if ("early_stop" in model_cfg["training"] and
-                        model_cfg["training"]["early_stop"]):
-                        break
-                    elif not self._run_stop_printed:
-                        self.stop_training(run_status, epoch+1, run_time.time_elapsed())
-
-                # Run for at least 13 minutes and train_epochs are reach
-                if run_time.time_elapsed() > 11 * 60 and (
-                    run_status is not None or epoch > model_cfg["training"]["train_epochs"]):
-                    break
+        run_status = None                                
+        def run():
+            run_status = None                                
+            with utils.ExecutionTimer(name="run_time", profile=self._config["profile"]) as run_time:
+                train_iterator = iter(self._training_pipeline)
+                val_iterator = iter(self._validation_pipeline)
             
-            if run_status is None:
-                run_status = "aborted"
+                for epoch in range(model_cfg["training"]["train_epochs"] * 10):
+                    last_score = self._trainer.epoch_step(
+                        train_iterator, val_iterator, epoch, eval_only=eval_only)
 
-            torch.cuda.synchronize()
-        self._distenv.local_barrier()
+                    if last_score <= model_cfg["training"]["target_score"]:
+                        run_status = "success"
+                    
+                        if ("early_stop" in model_cfg["training"] and
+                            model_cfg["training"]["early_stop"]):
+                            break
+                        elif not self._run_stop_printed:
+                            self.stop_training(run_status, epoch+1, run_time.time_elapsed())
 
-        if not self._run_stop_printed:
-            utils.logger.mllogger.log_run_stop(status=run_status,
-                                               time=run_time.time_elapsed(),
-                                               epoch_num=epoch+1)
-        self._distenv.global_barrier()
+                        # Run for at least 13 minutes and train_epochs are reach
+                    if run_time.time_elapsed() > 11 * 60 and (
+                            run_status is not None or epoch > model_cfg["training"]["train_epochs"]):
+                        break
+            
+                if run_status is None:
+                    run_status = "aborted"
 
+                torch.cuda.synchronize()
+            self._distenv.local_barrier()
+            if not self._run_stop_printed:
+                utils.logger.mllogger.log_run_stop(status=run_status,
+                                                   time=run_time.time_elapsed(),
+                                                   epoch_num=epoch+1)
+            self._distenv.global_barrier()
+            self._metric.finalize()
+            return run_status
+        if os.getenv('TORCH_PROFILER_ENABLE')=="1":
+            from torch.profiler import profile, record_function, ProfilerActivity
+            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]
+            with profile(activities=activities) as prof:
+                run_status = run()
+            prof.export_chrome_trace(
+                f"{self.pfw_logdir}/torch-trace-{self._distenv.rank}-of-{self._distenv.size}.json"
+            )
+        else:
+            run_status = run()
 
 @hydra.main(config_path="configs",
             config_name="baseline",

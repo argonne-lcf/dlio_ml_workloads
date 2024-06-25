@@ -1,36 +1,60 @@
 #!/bin/bash -x
-module use /soft/modulefiles
+# Define the workdir, please modify accordingly
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export WORKDIR=$SCRIPT_DIR
+
+# Get python setup
+source ${WORKDIR}/platforms/conda.sh
+
+# Base PYTHON environment
 export DATE_TAG=${DATE_TAG:-"2024-04-29"}
-echo $DATE_TAG
-module load conda/$DATE_TAG
-export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/
+
+# DLIO profiler
 export DLIO_PROFILER_ENABLE=1
 export DLIO_PROFILER_INC_METADATA=1
-export PYTHONPATH=${WORKDIR}/pfw_utils:$PYTHONPATH
+export DARSHAN_DISABLE=1 
+export PYTHONPATH=${WORKDIR}:$PYTHONPATH
 
 # Please change the following path accordingly 
-export ML_ENV=$HOME/PolarisAT_eagle/pyenvs/ml_workloads/$DATE_TAG
-
-export LD_LIBRARY_PATH=/soft/libraries/hwloc/lib:$LD_LIBRARY_PATH
+export ML_ENV=${WORKDIR}/soft/pyenvs/ml_workloads/$DATE_TAG
+export LD_LIBRARY_PATH=${HWLOC_DIR}/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$WORKDIR/soft/boost/1.85.0/lib:$LD_LIBRARY_PATH
 if [[ -e $ML_ENV ]]; then
-    conda activate $ML_ENV
+    export PYTHONPATH=$WORKDIR:$PYTHONPATH
+    source $ML_ENV/bin/activate
 else
     conda activate 
     python -m venv $ML_ENV --system-site-packages
     source $ML_ENV/bin/activate
-    ./install_dlio_profiler.sh
+    pip install --upgrade pip
     #install apex
-    git clone https://github.com/NVIDIA/apex
-    cd apex
+    git clone https://github.com/NVIDIA/apex /tmp/$USER/apex
+    cd /tmp/$USER/apex
     python setup.py install
     cd -
-    git clone https://github.com/NVIDIA/mlperf-common.git /tmp/mlperf-common
-    cd /tmp/mlperf-common
+    git clone https://github.com/NVIDIA/mlperf-common.git /tmp/$USER/mlperf-common
+    cd /tmp/$USER/mlperf-common
     python setup.py install 
     cd -
-    git clone https://github.com/mlperf/logging.git /tmp/mlperf-logging
-    cd /tmp/mlperf-logging
+    git clone https://github.com/mlperf/logging.git /tmp/$USER/mlperf-logging
+    cd /tmp/$USER/mlperf-logging
     python setup.py install
     cd -
+    python -m pip install -r ./unet3d/requirements.txt
+    python -m pip install -r ./cosmoflow/requirements.txt
+
+
+    # install other dependencies
+    cd soft/
+    ./install_dlio_profiler.sh
+    ./install_boost.sh
+    ./install_libaio.sh
+    cd -
+
+    # install cosmoflow dependencies
+    cd ./cosmoflow
+    sh build_libCosmoflowExt.sh
+    cd -
+    
+    rm -rf /tmp/$USER/
 fi
-# INSTALL OTHER MISSING FILES

@@ -2,7 +2,8 @@
 #COBALT -q gpu_a100 -t 1:00:00 -n 1
 # The following seven lines are specific to Argonne JLSE. Please comment them 
 #module load darshan/darshan-openmpi-gcc
-source /home/hzheng/PolarisAT_eagle/dlio_ml_workloads/setup_ml_env.sh
+export WORKDIR=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads
+source $WORKDIR/setup_ml_env.sh
 export PYTHONPATH=/home/hzheng/PolarisAT_eagle/dlio_ml_workloads/:$PYTHONPATH
 export RDMAV_HUGEPAGES_SAFE=1
 set -e

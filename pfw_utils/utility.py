@@ -50,10 +50,9 @@ else:
         def __init__(self, type="PROFILER"):
             self.type = type
         def log(self, func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                x = func(*args, **kwargs)
-                return x
+            pass
+        def iter(self, func):
+            return func
     class dlio_logger:
         def __init__(self,):
             self.type = None
@@ -150,8 +149,8 @@ class Metric:
         if self.logger is not None:
             self.logger(msg)
         else:
-            print(f"[METRIC] {msg}")
-    def __del__(self):
+            print(f"[METRIC] {msg}", flush=True)
+    def finalize(self):
         self.summary['AU_in_percentation'] = [d for d in self.AU[:self.epochs]]
         self.summary['Throughput_in_samples_per_second'] = [d for d in self.throughput[:self.epochs]]
         self.summary['epochs'] = self.epochs
