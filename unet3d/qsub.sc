@@ -25,7 +25,7 @@ OUTPUT=results/n${PBS_JOBSIZE}.g${PPN}.b${BATCH_SIZE}/${TAG}/
 mkdir -p $OUTPUT
 export NPROC=$((PBS_JOBSIZE*PPN))
 [ -e ${DATA_TOP}/datax$NPROC ] || aprun -n $NPROC -N $PPN --cc depth -d 16 ./launcher.sh ./mul.sh $NPROC
-BATCH_SIZE=${BATCH_SIZE} DATA_DIR=${DATA_TOP}/datax$NPROC NUM_WOKRERS=${NUM_WORKERS} OUTPUT_DIR=${OUTPUT} NPROC=$((PBS_JOBSIZE*PPN)) PPN=${PPN} ./run_polaris.sh | tee -a ${OUTPUT}/output.log
+BATCH_SIZE=${BATCH_SIZE} DATA_DIR=${DATA_TOP}/datax$NPROC NUM_WORKERS=${NUM_WORKERS} OUTPUT_DIR=${OUTPUT} NPROC=$((PBS_JOBSIZE*PPN)) PPN=${PPN} ./run_polaris.sh | tee -a ${OUTPUT}/output.log
 nvidia-smi > $OUTPUT/gpu.info
 env >& $OUTPUT/env.dat
 cp $0.o$ID $0.e$ID ${OUTPUT}/
