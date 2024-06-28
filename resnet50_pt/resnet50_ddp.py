@@ -12,7 +12,7 @@ import logging
 import time
 import os
 from enum import Enum
-
+from data_loader import DaliDataLoader
 import torchvision.models as models
 
 # 1. Import necessary packages.
@@ -218,7 +218,8 @@ def main():
     parser.add_argument("--shuffle", action='store_true', help="shuffle the dataset")
     parser.add_argument("--dont_pin_memory", action='store_true')    
     parser.add_argument("--num-workers", default=4, type=int)
-    parser.add_argument("--output-folder", default='outputs', type=str)    
+    parser.add_argument("--output-folder", default='outputs', type=str)
+    parser.add_argument("--data-format", default='jpeg', type=str)
     args = parser.parse_args()
 
     pfwlogger = PerfTrace.initialize_log(args.output_folder+f"/trace-{rank}-of-{size}.pfw", os.path.abspath(args.data), process_id = rank)        
@@ -258,7 +259,7 @@ def main():
         print("=> Dummy data is used!")
         train_dataset = datasets.FakeData(1281167, (3, 224, 224), 1000, transforms.ToTensor())
         val_dataset = datasets.FakeData(50000, (3, 224, 224), 1000, transforms.ToTensor())
-    else:
+    elif args.data_format=="jpeg":
         traindir = os.path.join(args.data, 'train')
         valdir = os.path.join(args.data, 'val')
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -281,12 +282,15 @@ def main():
                 transforms.ToTensor(),
                 normalize,
             ]))
-
-    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset, num_replicas=size, rank=rank)
-    val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset, num_replicas=size, rank=rank)
-    train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, **train_kwargs)
-    val_loader = torch.utils.data.DataLoader(val_dataset, sampler=val_sampler, **val_kwargs)
-
+        train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset, num_replicas=size, rank=rank)
+        val_sampler = torch.utils.data.distributed.DistributedSampler(val_dataset, num_replicas=size, rank=rank)
+        train_loader = torch.utils.data.DataLoader(train_dataset, sampler=train_sampler, **train_kwargs)
+        val_loader = torch.utils.data.DataLoader(val_dataset, sampler=val_sampler, **val_kwargs)
+        
+    else:
+        train_loader = DaliDataLoader("/eagles/DLIO/datasets/resnet50/tfrecords/data", "/eagles/DLIO/datasets/resnet50/tfrecords/idx", num_shards=size, shard_idx=rank, batch_size=args.batch_size, num_threads=args.num_workers, device_id=local_rank)
+        val_data = train_loader
+        
     model = models.resnet50()
     # model = model.to(device)
     # model = Net()  
