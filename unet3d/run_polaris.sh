@@ -25,10 +25,12 @@ DATASET_DIR=${DATA_DIR:-"/eagle/datasets/unet3d/"}
 BATCH_SIZE=${BATCH_SIZE:-7}
 GRADIENT_ACCUMULATION_STEPS=1
 NUM_WORKERS=${NUM_WORKERS:-4}
+NUM_SAMPLES=${NUM_SAMPLES:-256}
 SLEEP=${SLEEP:--1}
 OUTPUT_DIR=${OUTPUT_DIR:-"results/"}
 NPROC=${NPROC:-1}
 PPN=${PPN:-4}
+DATA_LOADER=${DATA_LOADER:-"pytorch"}
 echo "{
  MAX_EPOCHS: ${MAX_EPOCHS}, 
  QUALITY_THRESHOLD: ${QUALITY_THRESHOLD},
@@ -71,7 +73,9 @@ mpiexec -np ${NPROC} --ppn ${PPN} --cpu-bind depth -d $((64/PPN)) ./launcher.sh 
     --lr_warmup_epochs ${LR_WARMUP_EPOCHS} \
     --num_workers ${NUM_WORKERS} \
     --output_dir ${OUTPUT_DIR} \
-    --sleep ${SLEEP} 
+    --loader ${DATA_LOADER} \
+    --sleep ${SLEEP} \
+    --num_samples $NUM_SAMPLES
 	# end timing
 	end=$(date +%s)
 	end_fmt=$(date +%Y-%m-%d\ %r)

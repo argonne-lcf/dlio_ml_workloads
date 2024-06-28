@@ -58,7 +58,7 @@ def get_data_split(path: str, num_shards: int, shard_id: int):
 
 class SyntheticDataset(Dataset):
     def __init__(self, channels_in=1, channels_out=3, shape=(128, 128, 128),
-                 device="cpu", layout="NCDHW", scalar=False):
+                 device="cpu", layout="NCDHW", scalar=False, num_samples=256):
         shape = tuple(shape)
         x_shape = (channels_in,) + shape if layout == "NCDHW" else shape + (channels_in,)
         self.x = torch.rand((32, *x_shape), dtype=torch.float32, device=device, requires_grad=False)
@@ -69,9 +69,10 @@ class SyntheticDataset(Dataset):
         else:
             y_shape = (channels_out,) + shape if layout == "NCDHW" else shape + (channels_out,)
             self.y = torch.rand((32, *y_shape), dtype=torch.float32, device=device, requires_grad=False)
-
+        self.num_samples = num_samples
+        
     def __len__(self):
-        return 64
+        return self.num_samples
 
     def __getitem__(self, idx):
         return self.x[idx % 32], self.y[idx % 32]
@@ -79,8 +80,8 @@ class SyntheticDataset(Dataset):
 
 def get_data_loaders(flags, num_shards, global_rank):
     if flags.loader == "synthetic":
-        train_dataset = SyntheticDataset(scalar=True, shape=flags.input_shape, layout=flags.layout)
-        val_dataset = SyntheticDataset(scalar=True, shape=flags.val_input_shape, layout=flags.layout)
+        train_dataset = SyntheticDataset(scalar=True, shape=flags.input_shape, layout=flags.layout, num_samples=flags.num_samples)
+        val_dataset = SyntheticDataset(scalar=True, shape=flags.val_input_shape, layout=flags.layout, num_samples=flags.num_samples)
 
     elif flags.loader == "pytorch":
         x_train, x_val, y_train, y_val = get_data_split(flags.data_dir, num_shards, shard_id=global_rank)
