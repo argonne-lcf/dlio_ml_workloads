@@ -11,14 +11,15 @@ def DaliDataLoader(data_dir, idx_dir, num_shards=1, shard_idx=0, batch_size=1, n
     data = data[shard_idx::num_shards]
     idx = data[shard_idx::num_shards]
     pipe = Pipeline(batch_size=batch_size, num_threads=num_threads, device_id=device_id)
+
     with pipe:
         inputs = fn.readers.tfrecord(
             path=data,
             index_path=idx,
             features = {
-                'image/class/label': tf.io.FixedLenFeature([], tf.int64),
-                'image/encoded': tf.io.FixedLenFeature([], tf.string),
-                'image/class/text':tf.io.FixedLenFeature([], tf.string)
+                'image/class/label': tfrec.FixedLenFeature([1], tfrec.int64, -1),
+                'image/encoded': tfrec.FixedLenFeature([], tfrec.string, ""),
+                'image/class/text':tfrec.FixedLenFeature([], tfrec.string, "")
             }
         )
         jpegs = inputs["image/encoded"]
@@ -37,4 +38,8 @@ def DaliDataLoader(data_dir, idx_dir, num_shards=1, shard_idx=0, batch_size=1, n
     return pip_out
 
 if __name__ == "__main__":
-    loader = DaliDataLoader()
+    data_dir = "/eagle/DLIO/datasets/resnet50/tfrecords/data/"
+    idx_dir = "/eagle/DLIO/datasets/resnet50/tfrecords/idx/"
+    loader = DaliDataLoader(data_dir, idx_dir, device_id=None)
+    for d in loader:
+        print(d)
