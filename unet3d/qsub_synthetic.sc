@@ -4,8 +4,8 @@
 #PBS -l walltime=1:00:00
 #PBS -M huihuo.zheng@anl.gov
 #PBS -A datascience
-#PBS -l filesystems=tegu:home
-#PBS -N unet3d
+#PBS -l filesystems=eagle:home
+#PBS -N unet3d-synthetic
 
 cd $PBS_O_WORKDIR
 source $HOME/dlio_ml_workloads/setup_ml_env.sh
