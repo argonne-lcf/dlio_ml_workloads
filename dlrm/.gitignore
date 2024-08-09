@@ -1,0 +1,5 @@
+*.sif
+build-temp-*
+conda_env/
+logs/
+results/

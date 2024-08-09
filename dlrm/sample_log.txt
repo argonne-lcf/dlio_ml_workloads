@@ -1,0 +1,212 @@
+Launcher [x3005c0s37b1n0]: g_rank=3, g_world_size=4, l_rank=3, l_world_size=4, master_addr=x3005c0s37b1n0
+Launcher [x3005c0s37b1n0]: g_rank=2, g_world_size=4, l_rank=2, l_world_size=4, master_addr=x3005c0s37b1n0
+Launcher [x3005c0s37b1n0]: g_rank=0, g_world_size=4, l_rank=0, l_world_size=4, master_addr=x3005c0s37b1n0
+Launcher [x3005c0s37b1n0]: g_rank=1, g_world_size=4, l_rank=1, l_world_size=4, master_addr=x3005c0s37b1n0
+:::MLLOG {"namespace": "", "time_ms": 1723234674361, "event_type": "POINT_IN_TIME", "key": "cache_clear", "value": true, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 670}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674361, "event_type": "POINT_IN_TIME", "key": "cache_clear", "value": true, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 670}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674363, "event_type": "INTERVAL_START", "key": "init_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 671}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674361, "event_type": "POINT_IN_TIME", "key": "cache_clear", "value": true, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 670}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674363, "event_type": "INTERVAL_START", "key": "init_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 671}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674361, "event_type": "POINT_IN_TIME", "key": "cache_clear", "value": true, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 670}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674363, "event_type": "INTERVAL_START", "key": "init_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 671}}
+:::MLLOG {"namespace": "", "time_ms": 1723234674363, "event_type": "INTERVAL_START", "key": "init_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 671}}
+{'adagrad': False,
+ 'allow_tf32': False,
+ 'batch_size': 8192,
+ 'collect_multi_hot_freqs_stats': False,
+ 'dataset_name': 'criteo_1t',
+ 'dcn_low_rank_dim': 512,
+ 'dcn_num_layers': 3,
+ 'dense_arch_layer_sizes': [512, 256, 128],
+ 'drop_last_training_batch': False,
+ 'embedding_dim': 128,
+ 'epochs': 3,
+ 'evaluate_on_epoch_end': True,
+ 'evaluate_on_training_end': True,
+ 'in_memory_binary_criteo_path': '/eagle/DLIO/iyildirim/datasets/criteo1tb_final2',
+ 'interaction_branch1_layer_sizes': [2048, 2048],
+ 'interaction_branch2_layer_sizes': [2048, 2048],
+ 'interaction_type': <InteractionType.ORIGINAL: 'original'>,
+ 'learning_rate': 0.1,
+ 'limit_test_batches': None,
+ 'limit_train_batches': None,
+ 'limit_val_batches': None,
+ 'lr_decay_start': 0,
+ 'lr_decay_steps': 0,
+ 'lr_warmup_steps': 0,
+ 'mmap_mode': False,
+ 'multi_hot_distribution_type': None,
+ 'multi_hot_sizes': None,
+ 'num_embeddings': 100000,
+ 'num_embeddings_per_feature': [45833188,
+                                36746,
+                                17245,
+                                7413,
+                                20243,
+                                3,
+                                7114,
+                                1441,
+                                62,
+                                29275261,
+                                1572176,
+                                345138,
+                                10,
+                                2209,
+                                11267,
+                                128,
+                                4,
+                                974,
+                                14,
+                                48937457,
+                                11316796,
+                                40094537,
+                                452104,
+                                12606,
+                                104,
+                                35],
+ 'output_dir': '/home/iyildirim/projects/dlio_ml_workloads/dlrm/results/2058805',
+ 'over_arch_layer_sizes': [1024, 1024, 512, 256, 1],
+ 'pin_memory': True,
+ 'print_lr': False,
+ 'print_progress': False,
+ 'print_sharding_plan': True,
+ 'seed': None,
+ 'shuffle_batches': True,
+ 'shuffle_training_set': False,
+ 'synthetic_multi_hot_criteo_path': None,
+ 'test_batch_size': None,
+ 'validation_auroc': None,
+ 'validation_freq_within_epoch': None}
+:::MLLOG {"namespace": "", "time_ms": 1723234676198, "event_type": "POINT_IN_TIME", "key": "submission_benchmark", "value": "dlrm_dcnv2", "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/mlperf_logging_utils.py", "lineno": 9}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676202, "event_type": "POINT_IN_TIME", "key": "submission_org", "value": "reference_implementation", "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/mlperf_logging_utils.py", "lineno": 13}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676202, "event_type": "POINT_IN_TIME", "key": "submission_division", "value": "closed", "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/mlperf_logging_utils.py", "lineno": 17}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676202, "event_type": "POINT_IN_TIME", "key": "submission_status", "value": "onprem", "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/mlperf_logging_utils.py", "lineno": 21}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676202, "event_type": "POINT_IN_TIME", "key": "submission_platform", "value": "reference_implementation", "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/mlperf_logging_utils.py", "lineno": 25}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676202, "event_type": "POINT_IN_TIME", "key": "global_batch_size", "value": 32768, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 717}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676202, "event_type": "POINT_IN_TIME", "key": "gradient_accumulation_steps", "value": 1, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 721}}
+:::MLLOG {"namespace": "", "time_ms": 1723234676203, "event_type": "POINT_IN_TIME", "key": "seed", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 725}}
+model.sparse_arch.embedding_bag_collection
+t_cat_0 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[45833188, 128], placement=rank:1/cuda:1)])) 
+
+t_cat_1 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[36746, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_2 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[2], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[17245, 128], placement=rank:2/cuda:2)])) 
+
+t_cat_3 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[7413, 128], placement=rank:1/cuda:1)])) 
+
+t_cat_4 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[20243, 128], placement=rank:1/cuda:1)])) 
+
+t_cat_5 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[3, 128], placement=rank:1/cuda:1)])) 
+
+t_cat_6 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[2], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[7114, 128], placement=rank:2/cuda:2)])) 
+
+t_cat_7 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[1441, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_8 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[62, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_9 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[3], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[29275261, 128], placement=rank:3/cuda:3)])) 
+
+t_cat_10 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[1572176, 128], placement=rank:1/cuda:1)])) 
+
+t_cat_11 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[3], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[345138, 128], placement=rank:3/cuda:3)])) 
+
+t_cat_12 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[3], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[10, 128], placement=rank:3/cuda:3)])) 
+
+t_cat_13 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[3], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[2209, 128], placement=rank:3/cuda:3)])) 
+
+t_cat_14 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[11267, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_15 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[2], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[128, 128], placement=rank:2/cuda:2)])) 
+
+t_cat_16 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[4, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_17 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[974, 128], placement=rank:1/cuda:1)])) 
+
+t_cat_18 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[2], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[14, 128], placement=rank:2/cuda:2)])) 
+
+t_cat_19 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[48937457, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_20 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[0], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[11316796, 128], placement=rank:0/cuda:0)])) 
+
+t_cat_21 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[2], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[40094537, 128], placement=rank:2/cuda:2)])) 
+
+t_cat_22 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[2], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[452104, 128], placement=rank:2/cuda:2)])) 
+
+t_cat_23 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[3], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[12606, 128], placement=rank:3/cuda:3)])) 
+
+t_cat_24 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[3], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[104, 128], placement=rank:3/cuda:3)])) 
+
+t_cat_25 
+ ParameterSharding(sharding_type='table_wise', compute_kernel='fused', ranks=[1], sharding_spec=EnumerableShardingSpec(shards=[ShardMetadata(shard_offsets=[0, 0], shard_sizes=[35, 128], placement=rank:1/cuda:1)])) 
+
+:::MLLOG {"namespace": "", "time_ms": 1723234680842, "event_type": "POINT_IN_TIME", "key": "opt_name", "value": "sgd", "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 867}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680842, "event_type": "POINT_IN_TIME", "key": "opt_base_learning_rate", "value": 0.1, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 871}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680842, "event_type": "POINT_IN_TIME", "key": "opt_adagrad_learning_rate_decay", "value": 0, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 875}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680842, "event_type": "POINT_IN_TIME", "key": "opt_weight_decay", "value": 0, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 879}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680842, "event_type": "POINT_IN_TIME", "key": "opt_adagrad_initial_accumulator_value", "value": 0, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 883}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680843, "event_type": "POINT_IN_TIME", "key": "opt_adagrad_epsilon", "value": 1e-08, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 887}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680843, "event_type": "POINT_IN_TIME", "key": "opt_learning_rate_warmup_steps", "value": 0, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 891}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680843, "event_type": "POINT_IN_TIME", "key": "opt_learning_rate_decay_start_step", "value": 0, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 895}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680843, "event_type": "POINT_IN_TIME", "key": "opt_learning_rate_decay_steps", "value": 0, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 899}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680843, "event_type": "INTERVAL_START", "key": "init_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 904}}
+:::MLLOG {"namespace": "", "time_ms": 1723234680843, "event_type": "INTERVAL_START", "key": "run_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 907}}
+:::MLLOG {"namespace": "", "time_ms": 1723234708939, "event_type": "POINT_IN_TIME", "key": "train_samples", "value": 115015680, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 917}}
+:::MLLOG {"namespace": "", "time_ms": 1723234708940, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 590, "epoch_num": 0}}
+Total number of iterations: 3510
+:::MLLOG {"namespace": "", "time_ms": 1723234765990, "event_type": "INTERVAL_START", "key": "eval_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 385, "epoch_num": 1}}
+AUROC over val set: 0.7198140621185303.
+Number of val samples: 2500000
+:::MLLOG {"namespace": "", "time_ms": 1723234766745, "event_type": "POINT_IN_TIME", "key": "eval_accuracy", "value": 0.7198140621185303, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 427, "epoch_num": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1723234766745, "event_type": "INTERVAL_END", "key": "eval_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 431, "epoch_num": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1723234766746, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 620, "epoch_num": 0}}
+:::MLLOG {"namespace": "", "time_ms": 1723234766746, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 590, "epoch_num": 1}}
+Total number of iterations: 3510
+:::MLLOG {"namespace": "", "time_ms": 1723234822226, "event_type": "INTERVAL_START", "key": "eval_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 385, "epoch_num": 2}}
+AUROC over val set: 0.7377200126647949.
+Number of val samples: 2500000
+:::MLLOG {"namespace": "", "time_ms": 1723234822922, "event_type": "POINT_IN_TIME", "key": "eval_accuracy", "value": 0.7377200126647949, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 427, "epoch_num": 2}}
+:::MLLOG {"namespace": "", "time_ms": 1723234822923, "event_type": "INTERVAL_END", "key": "eval_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 431, "epoch_num": 2}}
+:::MLLOG {"namespace": "", "time_ms": 1723234822923, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 620, "epoch_num": 1}}
+:::MLLOG {"namespace": "", "time_ms": 1723234822923, "event_type": "INTERVAL_START", "key": "epoch_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 590, "epoch_num": 2}}
+Total number of iterations: 3510
+:::MLLOG {"namespace": "", "time_ms": 1723234878488, "event_type": "INTERVAL_START", "key": "eval_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 385, "epoch_num": 3}}
+AUROC over val set: 0.754927933216095.
+Number of val samples: 2500000
+:::MLLOG {"namespace": "", "time_ms": 1723234879206, "event_type": "POINT_IN_TIME", "key": "eval_accuracy", "value": 0.754927933216095, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 427, "epoch_num": 3}}
+:::MLLOG {"namespace": "", "time_ms": 1723234879207, "event_type": "INTERVAL_END", "key": "eval_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 431, "epoch_num": 3}}
+:::MLLOG {"namespace": "", "time_ms": 1723234879207, "event_type": "INTERVAL_END", "key": "epoch_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 620, "epoch_num": 2}}
+:::MLLOG {"namespace": "", "time_ms": 1723234879207, "event_type": "INTERVAL_END", "key": "run_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 632, "status": "aborted", "epoch_num": 3}}
+:::MLLOG {"namespace": "", "time_ms": 1723234879208, "event_type": "INTERVAL_START", "key": "eval_start", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 385, "epoch_num": 3}}
+AUROC over test set: 0.7549418210983276.
+Number of test samples: 2500000
+:::MLLOG {"namespace": "", "time_ms": 1723234879926, "event_type": "POINT_IN_TIME", "key": "eval_accuracy", "value": 0.7549418210983276, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 427, "epoch_num": 3}}
+:::MLLOG {"namespace": "", "time_ms": 1723234879926, "event_type": "INTERVAL_END", "key": "eval_stop", "value": null, "metadata": {"file": "/home/iyildirim/projects/dlio_ml_workloads/dlrm/mlcommons_training/recommendation_v2/torchrec_dlrm/dlrm_main.py", "lineno": 431, "epoch_num": 3}}
+Total number of traces: 4
+Merging complete. Output file is '/home/iyildirim/projects/dlio_ml_workloads/dlrm/results/2058805/dlrm-n1-ppn4-gpu4-ep3-bs8192-ed128-lr0.1.pfw'.
+Total number of traces: 4
+Merging complete. Output file is '/home/iyildirim/projects/dlio_ml_workloads/dlrm/results/2058805/dlrm-n1-ppn4-gpu4-ep3-bs8192-ed128-lr0.1-posix.pfw'.

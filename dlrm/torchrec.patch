@@ -1,0 +1,111 @@
+diff --git a/torchrec/datasets/criteo.py b/torchrec/datasets/criteo.py
+index 46543d3c..2a374b48 100644
+--- a/torchrec/datasets/criteo.py
++++ b/torchrec/datasets/criteo.py
+@@ -25,6 +25,8 @@ from torchrec.datasets.utils import (
+     safe_cast,
+ )
+ from torchrec.sparse.jagged_tensor import KeyedJaggedTensor
++from dftracer.logger import dft_fn
++dft_io = dft_fn("io")
+ 
+ FREQUENCY_THRESHOLD = 3
+ INT_FEATURE_COUNT = 13
+@@ -885,6 +887,7 @@ class InMemoryBinaryCriteoIterDataPipe(IterableDataset):
+             labels=torch.from_numpy(labels.reshape(-1)),
+         )
+ 
++    @dft_io.log
+     def __iter__(self) -> Iterator[Batch]:
+         # Invariant: buffer never contains more than batch_size rows.
+         buffer: Optional[List[np.ndarray]] = None
+diff --git a/torchrec/distributed/train_pipeline.py b/torchrec/distributed/train_pipeline.py
+index 53f41c6d..6b125392 100644
+--- a/torchrec/distributed/train_pipeline.py
++++ b/torchrec/distributed/train_pipeline.py
+@@ -29,6 +29,8 @@ from torchrec.distributed.types import Awaitable
+ from torchrec.modules.feature_processor import BaseGroupedFeatureProcessor
+ from torchrec.streamable import Multistreamable, Pipelineable
+ 
++from dftracer.logger import dft_fn
++
+ logger: logging.Logger = logging.getLogger(__name__)
+ 
+ 
+@@ -535,47 +537,54 @@ class TrainPipelineSparseDist(TrainPipeline[In, Out]):
+ 
+         if self._model.training:
+             with record_function("## zero_grad ##"):
+-                self._optimizer.zero_grad()
++                with dft_fn("pipeline", name="zero_grad"):
++                    self._optimizer.zero_grad()
+ 
+         with record_function("## copy_batch_to_gpu ##"):
+-            with torch.cuda.stream(self._memcpy_stream):
+-                batch_ip2 = next(dataloader_iter)
+-                self._batch_ip2 = batch_ip2 = _to_device(
+-                    batch_ip2, self._device, non_blocking=True
+-                )
++            with dft_fn("pipeline", name="copy_batch_to_gpu"):
++                with torch.cuda.stream(self._memcpy_stream):
++                    batch_ip2 = next(dataloader_iter)
++                    self._batch_ip2 = batch_ip2 = _to_device(
++                        batch_ip2, self._device, non_blocking=True
++                    )
+         batch_i = cast(In, self._batch_i)
+         batch_ip1 = cast(In, self._batch_ip1)
+ 
+         with record_function("## wait_for_batch ##"):
+-            _wait_for_batch(batch_i, self._data_dist_stream)
++            with dft_fn("pipeline", name="wait_for_batch"):
++                _wait_for_batch(batch_i, self._data_dist_stream)
+ 
+         # Forward
+         with record_function("## forward ##"):
+-            # if using multiple streams (ie. CUDA), create an event in default stream
+-            # before starting forward pass
+-            if self._data_dist_stream:
+-                event = torch.cuda.current_stream().record_event()
+-            (losses, output) = cast(Tuple[torch.Tensor, Out], self._model(batch_i))
++            with dft_fn("pipeline", name="forward"):
++                # if using multiple streams (ie. CUDA), create an event in default stream
++                # before starting forward pass
++                if self._data_dist_stream:
++                    event = torch.cuda.current_stream().record_event()
++                (losses, output) = cast(Tuple[torch.Tensor, Out], self._model(batch_i))
+ 
+         # Data Distribution
+         with record_function("## sparse_data_dist ##"):
+-            with torch.cuda.stream(self._data_dist_stream):
+-                _wait_for_batch(batch_ip1, self._memcpy_stream)
+-                # Ensure event in default stream has been called before
+-                # starting data dist
+-                if self._data_dist_stream:
+-                    # pyre-ignore [61]: Local variable `event` is undefined, or not always defined
+-                    self._data_dist_stream.wait_event(event)
+-                _start_data_dist(self._pipelined_modules, batch_ip1, self._context)
++            with dft_fn("pipeline", name="sparse_data_dist"):
++                with torch.cuda.stream(self._data_dist_stream):
++                    _wait_for_batch(batch_ip1, self._memcpy_stream)
++                    # Ensure event in default stream has been called before
++                    # starting data dist
++                    if self._data_dist_stream:
++                        # pyre-ignore [61]: Local variable `event` is undefined, or not always defined
++                        self._data_dist_stream.wait_event(event)
++                    _start_data_dist(self._pipelined_modules, batch_ip1, self._context)
+ 
+         if self._model.training:
+             # Backward
+             with record_function("## backward ##"):
+-                torch.sum(losses, dim=0).backward()
++                with dft_fn("pipeline", name="backward"):
++                    torch.sum(losses, dim=0).backward()
+ 
+             # Update
+             with record_function("## optimizer ##"):
+-                self._optimizer.step()
++                with dft_fn("pipeline", name="optimizer"):
++                    self._optimizer.step()
+ 
+         self._batch_i = batch_ip1
+         self._batch_ip1 = batch_ip2

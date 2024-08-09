@@ -37,13 +37,14 @@ from pfw_utils.enumerations import LoggerType
 
 _DLIO_PROFILER_EXIST=True
 try:
-    import dlio_profiler
+    import dftracer
+    print("DFTracer found")
 except:
     _DLIO_PROFILER_EXIST=False
+    print("DFTracer not found")
 
 if _DLIO_PROFILER_EXIST:
-    from dlio_profiler.logger import fn_interceptor as Profile
-    from dlio_profiler.logger import dlio_logger as PerfTrace
+    from dftracer.logger import dftracer as PerfTrace, dft_fn as Profile
 else:
     from functools import wraps
     class Profile:
@@ -53,12 +54,14 @@ else:
             pass
         def iter(self, func):
             return func
-    class dlio_logger:
+    class dftracer:
         def __init__(self,):
             self.type = None
         def initialize_log(self, logfile=None, data_dir=None, process_id=-1):
             pass
-    PerfTrace = dlio_logger()
+        def iter(self, a):
+            return a
+    PerfTrace = dftracer()
 
 LOG_TS_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 from mpi4py import MPI

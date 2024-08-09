@@ -1,0 +1,71 @@
+diff --git a/recommendation_v2/torchrec_dlrm/dlrm_main.py b/recommendation_v2/torchrec_dlrm/dlrm_main.py
+index 1947f69..2c04266 100644
+--- a/recommendation_v2/torchrec_dlrm/dlrm_main.py
++++ b/recommendation_v2/torchrec_dlrm/dlrm_main.py
+@@ -6,6 +6,7 @@
+ 
+ import argparse
+ import itertools
++import json
+ import os
+ import sys
+ from dataclasses import dataclass, field
+@@ -39,6 +40,9 @@ from torchrec.optim.keyed import CombinedOptimizer, KeyedOptimizerWrapper
+ from torchrec.optim.optimizers import in_backward_optimizer_filter
+ from tqdm import tqdm
+ 
++from dftracer.logger import dftracer, dft_fn
++dft_compute = dft_fn("compute")
++
+ # OSS import
+ try:
+     # pyre-ignore[21]
+@@ -335,9 +339,15 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
+         action="store_true",
+         help="Print tqdm progress bar during training and evaluation.",
+     )
++    parser.add_argument(
++        "--output_dir",
++        type=str,
++        default=None,
++        help="Directory to save output files.",
++    )
+     return parser.parse_args(argv)
+ 
+-
++@dft_compute.log
+ def _evaluate(
+     limit_batches: Optional[int],
+     eval_pipeline: TrainPipelineSparseDist,
+@@ -428,7 +438,7 @@ def _evaluate(
+             )
+     return auroc_result
+ 
+-
++@dft_compute.log
+ def _train(
+     train_pipeline: TrainPipelineSparseDist,
+     val_pipeline: TrainPipelineSparseDist,
+@@ -921,7 +931,7 @@ def main(argv: List[str]) -> None:
+         )
+         val_dataloader = RestartableMap(multihot.convert_to_multi_hot, val_dataloader)
+         test_dataloader = RestartableMap(multihot.convert_to_multi_hot, test_dataloader)
+-    train_val_test(
++    results = train_val_test(
+         args,
+         model,
+         optimizer,
+@@ -933,7 +943,13 @@ def main(argv: List[str]) -> None:
+     )
+     if args.collect_multi_hot_freqs_stats:
+         multihot.save_freqs_stats()
++    if args.output_dir:
++        os.makedirs(args.output_dir, exist_ok=True)
++        with open(os.path.join(args.output_dir, "results.json"), "w") as f:
++            json.dump(vars(results), f, indent=4)
+ 
+ 
+ if __name__ == "__main__":
++    log_inst = dftracer.initialize_log(logfile=None, data_dir=None, process_id=-1)
+     main(sys.argv[1:])
++    log_inst.finalize()
